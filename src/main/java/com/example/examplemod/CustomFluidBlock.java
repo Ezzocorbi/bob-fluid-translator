@@ -16,7 +16,6 @@ public class CustomFluidBlock extends BlockFluidClassic {
     @SideOnly(Side.CLIENT)
     protected IIcon flowingIcon;
 
-
     public CustomFluidBlock(Fluid fluid, Material material, String name) {
         super(fluid, material);
         setBlockName(name);
