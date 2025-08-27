@@ -9,7 +9,6 @@ import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fluids.FluidContainerRegistry;
@@ -37,6 +36,14 @@ public class ExampleMod
 
         ItemJuiceBucket juiceBucket = new ItemJuiceBucket(juiceBlock);
         GameRegistry.registerItem(juiceBucket, "juiceBucket");
+
+//        GenericBucket genericBucket = new GenericBucket(Blocks.air);
+//        GameRegistry.registerItem(genericBucket, "genericBucket");
+
+//        ItemStack juiceBucketStack = new ItemStack(genericBucket);
+//        NBTTagCompound tag = new NBTTagCompound();
+//        tag.setInteger("FluidColor", juice.getColor());
+//        juiceBucketStack.setTagCompound(tag);
 
         FluidContainerRegistry.registerFluidContainer(
                 new FluidStack(juice, FluidContainerRegistry.BUCKET_VOLUME),
