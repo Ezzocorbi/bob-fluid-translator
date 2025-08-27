@@ -16,6 +16,7 @@ out/
 # Minecraft/Forge specific
 run/
 bin/
+eclipse/
 
 # Log files
 *.log
