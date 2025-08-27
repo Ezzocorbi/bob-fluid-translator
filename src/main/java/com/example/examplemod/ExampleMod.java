@@ -1,5 +1,7 @@
 package com.example.examplemod;
 
+import com.example.examplemod.blocks.FluidConverterBlock;
+import com.example.examplemod.tileentity.FluidConverterTank;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import cpw.mods.fml.common.Mod;
@@ -7,15 +9,6 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
-import net.minecraft.block.material.Material;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
-import net.minecraftforge.fluids.FluidContainerRegistry;
-import net.minecraftforge.fluids.FluidRegistry;
-import net.minecraftforge.fluids.FluidStack;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.ArrayList;
 
@@ -41,6 +34,12 @@ public class ExampleMod
             }
             ft.registerFluidType(f);
         }
+
+        // Register blocks
+        GameRegistry.registerBlock(new FluidConverterBlock(), "fluidConverter");
+
+        // Register tile entities
+        GameRegistry.registerTileEntity(FluidConverterTank.class, "fluidConverterTank");
     }
 
     @EventHandler
