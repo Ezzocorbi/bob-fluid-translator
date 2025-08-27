@@ -1,5 +1,7 @@
 package com.example.examplemod;
 
+import com.hbm.inventory.fluid.FluidType;
+import com.hbm.lib.RefStrings;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.material.Material;
@@ -8,23 +10,29 @@ import net.minecraft.util.IIcon;
 import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fluids.Fluid;
 
-public class BlockJuiceFluid extends BlockFluidClassic {
+public class CustomFluidBlock extends BlockFluidClassic {
     @SideOnly(Side.CLIENT)
     protected IIcon stillIcon;
     @SideOnly(Side.CLIENT)
     protected IIcon flowingIcon;
 
-    public BlockJuiceFluid(Fluid fluid, Material material) {
+
+    public CustomFluidBlock(Fluid fluid, Material material, String name) {
         super(fluid, material);
-        setBlockName("juiceFluid");
+        setBlockName(name);
     }
 
     @Override
     @SideOnly(Side.CLIENT)
     public void registerBlockIcons(IIconRegister iconRegister) {
-        stillIcon = iconRegister.registerIcon(ExampleMod.MODID+":juice_still");
-        flowingIcon = iconRegister.registerIcon(ExampleMod.MODID+":juice_flow");
-        // Assegna le icone al fluido
+        String stillName = RefStrings.MODID + ":" + getFluid().getName();
+        String flowingName = RefStrings.MODID + ":" + getFluid().getName();
+
+        System.out.println(stillName);
+        System.out.println(flowingName);
+        stillIcon = iconRegister.registerIcon(ExampleMod.MODID + ":copy/" + getFluid().getName());
+        flowingIcon = iconRegister.registerIcon(ExampleMod.MODID + ":copy/" + getFluid().getName());
+
         getFluid().setIcons(stillIcon, flowingIcon);
     }
 
