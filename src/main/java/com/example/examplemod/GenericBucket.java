@@ -7,18 +7,18 @@ import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemBucket;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
+import net.minecraftforge.fluids.Fluid;
 
 public class GenericBucket extends ItemBucket {
 
     @SideOnly(Side.CLIENT)
     private IIcon icon;
 
-    public GenericBucket(Block block) {
+    public GenericBucket(Fluid fluid, Block block) {
         super(block);
-        this.setUnlocalizedName("genericBucket");
+        this.setUnlocalizedName(fluid.getName() + "Bucket");
         this.setContainerItem(Items.bucket);
         this.setCreativeTab(CreativeTabs.tabMisc);
     }
@@ -32,21 +32,5 @@ public class GenericBucket extends ItemBucket {
     @SideOnly(Side.CLIENT)
     public void registerIcons(IIconRegister iconRegister) {
         this.icon = iconRegister.registerIcon("minecraft:bucket_empty");
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    public IIcon getIconFromDamage(int meta) {
-        return this.icon;
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    public int getColorFromItemStack(ItemStack stack, int renderPass) {
-        if (stack.hasTagCompound() && stack.getTagCompound().hasKey("FluidColor")) {
-//            System.out.println(stack.getTagCompound().getInteger("FluidColor"));
-            return stack.getTagCompound().getInteger("FluidColor");
-        }
-        return 0xFFFFFFFF; // bianco se vuoto
     }
 }

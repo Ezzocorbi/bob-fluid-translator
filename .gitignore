@@ -17,6 +17,7 @@ out/
 run/
 bin/
 eclipse/
+libs/
 
 # Log files
 *.log
