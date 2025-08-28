@@ -60,9 +60,8 @@ public class FluidTranslator
         GameRegistry.registerTileEntity(TileEntityHBMWrapper.class, "teHBMWrapperTank");
 
         // HBM specific stuff
-        Block bobTank = new BlockHBMFluidTank().setBlockName("bobtank").setBlockTextureName("minecraft:iron_block");
-        GameRegistry.registerBlock(bobTank, ItemBlockBase.class, bobTank.getUnlocalizedName());
-        GameRegistry.registerTileEntity(TileEntityHBMFluidTank.class, "bobTank");
+        GameRegistry.registerBlock(new BlockHBMFluidTank(), "simpleHBMTank");
+        GameRegistry.registerTileEntity(TileEntityHBMFluidTank.class, "teSimpleHBMTank");
     }
 
     @EventHandler

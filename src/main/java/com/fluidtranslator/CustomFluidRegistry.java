@@ -49,7 +49,7 @@ public class CustomFluidRegistry {
 
     /**
      * Returns the corresponding Forge fluid
-     * @param fluid HBM fluid
+     * @param fluidType HBM fluid
      * @return returns null if there is no correspondence (like for black-listed fluids)
      */
     public static Fluid getForgeFluid(FluidType fluidType) {
