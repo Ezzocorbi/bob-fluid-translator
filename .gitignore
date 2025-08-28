@@ -18,6 +18,7 @@ run/
 bin/
 eclipse/
 libs/
+src/main/resources/assets/bobfluidtranslator/textures/blocks/copy/
 
 # Log files
 *.log

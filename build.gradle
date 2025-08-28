@@ -28,13 +28,21 @@ minecraft {
     runDir = "eclipse"
 }
 
+repositories {
+    maven {
+        name = "OpenComputers"
+        url = "https://maven.cil.li/"
+    }
+}
+
 dependencies {
     // you may put jars on which you depend on in ./libs
     // or you may define them like so..
     //compile "some.group:artifact:version:classifier"
     //compile "some.group:artifact:version"
     compile files("libs/HBM-NTM-.1.0.27_X5251_H261.jar")
-      
+
+    implementation "li.cil.oc:OpenComputers:MC1.7.10-1.5.+:api"
     // real examples
     //compile 'com.mod-buildcraft:buildcraft:6.0.8:dev'  // adds buildcraft to the dev env
     //compile 'com.googlecode.efficient-java-matrix-library:ejml:0.24' // adds ejml to the dev env
