@@ -1,4 +1,4 @@
-package com.example.examplemod;
+package com.fluidtranslator;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;

@@ -1,7 +1,5 @@
-package com.example.examplemod;
+package com.fluidtranslator;
 
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.RefStrings;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.material.Material;
@@ -24,13 +22,13 @@ public class CustomFluidBlock extends BlockFluidClassic {
     @Override
     @SideOnly(Side.CLIENT)
     public void registerBlockIcons(IIconRegister iconRegister) {
-        String stillName = RefStrings.MODID + ":" + getFluid().getName();
-        String flowingName = RefStrings.MODID + ":" + getFluid().getName();
-
-        System.out.println(stillName);
-        System.out.println(flowingName);
-        stillIcon = iconRegister.registerIcon(ExampleMod.MODID + ":copy/" + getFluid().getName());
-        flowingIcon = iconRegister.registerIcon(ExampleMod.MODID + ":copy/" + getFluid().getName());
+//        String stillName = RefStrings.MODID + ":" + getFluid().getName();
+//        String flowingName = RefStrings.MODID + ":" + getFluid().getName();
+//
+//        System.out.println(stillName);
+//        System.out.println(flowingName);
+        stillIcon = iconRegister.registerIcon(FluidTranslator.MODID + ":copy/" + getFluid().getName());
+        flowingIcon = iconRegister.registerIcon(FluidTranslator.MODID + ":copy/" + getFluid().getName());
 
         getFluid().setIcons(stillIcon, flowingIcon);
     }
