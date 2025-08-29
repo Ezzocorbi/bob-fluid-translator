@@ -1,8 +1,6 @@
 package com.fluidtranslator.blocks;
 
-import com.fluidtranslator.FluidTranslator;
 import com.fluidtranslator.tileentity.TileEntityHBMWrapper;
-import com.fluidtranslator.tileentity.TileEntitySimpleFluidTank;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;

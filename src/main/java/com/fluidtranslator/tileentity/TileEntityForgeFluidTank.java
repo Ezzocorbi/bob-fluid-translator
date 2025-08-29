@@ -8,7 +8,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.*;
 
-public class TileEntitySimpleFluidTank extends TileEntity implements IFluidHandler {
+public class TileEntityForgeFluidTank extends TileEntity implements IFluidHandler {
 
     private final FluidTank forgeTank = new FluidTank(4000);
 

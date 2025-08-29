@@ -1,6 +1,6 @@
 package com.fluidtranslator.container;
 
-import com.fluidtranslator.tileentity.TileEntitySimpleFluidTank;
+import com.fluidtranslator.tileentity.TileEntityForgeFluidTank;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
@@ -8,9 +8,9 @@ import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
 
 public class GuiFluidTank extends GuiContainer {
-    private TileEntitySimpleFluidTank tank;
+    private TileEntityForgeFluidTank tank;
 
-    public GuiFluidTank(InventoryPlayer playerInv, TileEntitySimpleFluidTank tank) {
+    public GuiFluidTank(InventoryPlayer playerInv, TileEntityForgeFluidTank tank) {
         super(new ContainerFluidTank(playerInv, tank));
         this.tank = tank;
         this.xSize = 176;
