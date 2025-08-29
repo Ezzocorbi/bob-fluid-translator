@@ -1,13 +1,10 @@
 package com.fluidtranslator.blocks;
 
+import com.fluidtranslator.TankModes;
 import com.fluidtranslator.tileentity.TileEntityHBMFluidTank;
-import com.fluidtranslator.tileentity.TileEntityHBMWrapper;
 import com.hbm.inventory.fluid.FluidType;
-import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTank;
-import com.hbm.items.ModItems;
 import com.hbm.items.machine.IItemFluidIdentifier;
-import com.hbm.items.machine.ItemFluidIDMulti;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
@@ -15,8 +12,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
-import net.minecraftforge.fluids.FluidStack;
 
 public class BlockHBMFluidTank extends BlockContainer {
 
@@ -39,25 +34,12 @@ public class BlockHBMFluidTank extends BlockContainer {
             return;
         }
         TileEntity te = world.getTileEntity(x, y, z);
-        TileEntityHBMFluidTank teTank = (TileEntityHBMFluidTank) te;
-        String modeS = "invalid";
-        switch(teTank.mode) {
-            case 0:
-                modeS = "receiver";
-                break;
-            case 1:
-                modeS = "buffer";
-                break;
-            case 2:
-                modeS = "sender";
-                break;
-            case 3:
-                modeS = "disabled";
-                break;
+        if (te instanceof TileEntityHBMFluidTank) {
+            TileEntityHBMFluidTank teTank = (TileEntityHBMFluidTank) te;
+            teTank.mode = (short)((teTank.mode + 1) % 4);
+            String modeS = TankModes.byOrdinal(teTank.mode).toString().toLowerCase();
+            player.addChatMessage(new ChatComponentText("Set tank mode to " + modeS));
         }
-        teTank.mode = (short)((teTank.mode + 1) % 4);
-//        teTank.markDirtyAndUpdate();
-        player.addChatMessage(new ChatComponentText("Set tank mode to " + modeS));
     }
 
     @Override

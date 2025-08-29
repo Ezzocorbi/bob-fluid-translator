@@ -1,7 +1,7 @@
 package com.fluidtranslator.blocks;
 
 import com.fluidtranslator.FluidTranslator;
-import com.fluidtranslator.tileentity.TileEntitySimpleFluidTank;
+import com.fluidtranslator.tileentity.TileEntityForgeFluidTank;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
@@ -11,8 +11,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
 
-public class BlockSimpleFluidTank extends BlockContainer {
-    public BlockSimpleFluidTank() {
+public class BlockForgeFluidTank extends BlockContainer {
+    public BlockForgeFluidTank() {
         super(Material.rock);
         setBlockName("simpleFluidTank");
         setBlockTextureName("minecraft:glass");
@@ -21,7 +21,7 @@ public class BlockSimpleFluidTank extends BlockContainer {
 
     @Override
     public TileEntity createNewTileEntity(World world, int meta) {
-        return new TileEntitySimpleFluidTank();
+        return new TileEntityForgeFluidTank();
     }
 
     @Override
@@ -31,8 +31,8 @@ public class BlockSimpleFluidTank extends BlockContainer {
             player.openGui(FluidTranslator.instance, 0, world, x, y, z); // 0 = GUI ID
         }
         TileEntity te = world.getTileEntity(x, y, z);
-        if (te instanceof TileEntitySimpleFluidTank) {
-            TileEntitySimpleFluidTank tank = (TileEntitySimpleFluidTank) te;
+        if (te instanceof TileEntityForgeFluidTank) {
+            TileEntityForgeFluidTank tank = (TileEntityForgeFluidTank) te;
             FluidStack fluidStack = tank.getTankInfo(ForgeDirection.getOrientation(side))[0].fluid;
             if (fluidStack != null) {
                 player.addChatMessage(new ChatComponentText(fluidStack.getFluid().getName() + " | " + fluidStack.amount));

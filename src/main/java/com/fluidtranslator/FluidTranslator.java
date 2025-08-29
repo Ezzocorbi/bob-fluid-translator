@@ -1,16 +1,15 @@
 package com.fluidtranslator;
 
+import com.fluidtranslator.blocks.BlockForgeFluidTank;
 import com.fluidtranslator.blocks.BlockHBMFluidTank;
 import com.fluidtranslator.blocks.BlockHBMWrapperFluidTank;
-import com.fluidtranslator.blocks.BlockSimpleFluidTank;
 import com.fluidtranslator.gui.GuiHandler;
 import com.fluidtranslator.proxy.CommonProxy;
+import com.fluidtranslator.tileentity.TileEntityForgeFluidTank;
 import com.fluidtranslator.tileentity.TileEntityHBMFluidTank;
-import com.fluidtranslator.tileentity.TileEntitySimpleFluidTank;
 import com.fluidtranslator.tileentity.TileEntityHBMWrapper;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.items.block.ItemBlockBase;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.SidedProxy;
@@ -18,7 +17,6 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
-import net.minecraft.block.Block;
 
 import java.util.ArrayList;
 
@@ -52,11 +50,11 @@ public class FluidTranslator
         }
 
         // Register blocks
-        GameRegistry.registerBlock(new BlockSimpleFluidTank(), "simpleFluidTank");
+        GameRegistry.registerBlock(new BlockForgeFluidTank(), "simpleFluidTank");
         GameRegistry.registerBlock(new BlockHBMWrapperFluidTank(), "hbmToForgeTank");
 
         // Register tile entities
-        GameRegistry.registerTileEntity(TileEntitySimpleFluidTank.class, "teSimpleFluidTank");
+        GameRegistry.registerTileEntity(TileEntityForgeFluidTank.class, "teSimpleFluidTank");
         GameRegistry.registerTileEntity(TileEntityHBMWrapper.class, "teHBMWrapperTank");
 
         // HBM specific stuff
@@ -69,4 +67,5 @@ public class FluidTranslator
     {
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
     }
+
 }
