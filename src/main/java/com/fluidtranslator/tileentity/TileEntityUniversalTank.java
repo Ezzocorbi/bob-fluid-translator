@@ -3,6 +3,8 @@ package com.fluidtranslator.tileentity;
 import api.hbm.fluidmk2.FluidNode;
 import api.hbm.fluidmk2.IFluidStandardTransceiverMK2;
 import com.fluidtranslator.TankModes;
+import com.fluidtranslator.adapter.UnifiedFluidStack;
+import com.fluidtranslator.adapter.UnifiedFluidTank;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTank;
@@ -16,62 +18,53 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidTankInfo;
+import net.minecraftforge.fluids.IFluidHandler;
 
 import java.util.HashSet;
 
-public class TileEntityHBMFluidTank extends TileEntityMachineBase implements IFluidStandardTransceiverMK2 {
+public class TileEntityUniversalTank extends TileEntityMachineBase implements IFluidStandardTransceiverMK2, IFluidHandler {
 
     protected FluidNode node;
     protected FluidType lastType = Fluids.NONE;
-    public FluidTank tank;
+    public UnifiedFluidTank tank;
     public short mode = 0;
 
-    public TileEntityHBMFluidTank() {
+    public TileEntityUniversalTank() {
         super(1);
-        tank = new FluidTank(Fluids.NONE, 2000);
+        tank = new UnifiedFluidTank(2000);
     }
 
-    /**
-     *
-     * @return Restituisce la tank interna se la tile entity è disposta ad
-     * inviare i fluidi, altrimenti non reistuisce alcuna tank
-     */
+    /// HBM-RELEVANT IMPLEMENTATION ///
+
     @Override
     public FluidTank[] getSendingTanks() {
         if (mode == TankModes.BUFFER.ordinal || mode == TankModes.SENDER.ordinal)
-            return new FluidTank[] {tank};
+            return new FluidTank[] {tank.toHBM()};
         else
             return new FluidTank[0]; // Non restituisce alcuna tank
     }
 
-    /**
-     *
-     * @return Restituisce la tank interna se la tile entity è disposta ad
-     * accettare i fluidi, altrimenti non reistuisce alcuna tank
-     */
     @Override
     public FluidTank[] getReceivingTanks() {
         if (mode == TankModes.BUFFER.ordinal || mode == TankModes.RECEIVER.ordinal)
-            return new FluidTank[] {tank};
+            return new FluidTank[] {tank.toHBM()};
         else
             return new FluidTank[0]; // Non restituisce alcuna tank
     }
 
     @Override
     public FluidTank[] getAllTanks() {
-        return new FluidTank[] { tank };
+        return new FluidTank[] { tank.toHBM() };
     }
 
-    /**
-     * @return Volume ancora disponibile nella tank per questo fluido alla
-     *         pressione richiesta. Ritorna 0 se la modalità non accetta input
-     *         oppure se la pressione non coincide.
-     */
     @Override
     public long getDemand(FluidType type, int pressure) {
         if(this.mode == TankModes.SENDER.ordinal || this.mode == TankModes.DISABLED.ordinal) return 0;
-        if(tank.getPressure() != pressure) return 0;
-        return type == tank.getTankType() ? tank.getMaxFill() - tank.getFill() : 0;
+        if(tank.toHBM().getPressure() != pressure) return 0;
+        return type == tank.toHBM().getTankType() ? tank.getCapacity() - tank.getFill() : 0;
     }
 
     @Override
@@ -84,25 +77,12 @@ public class TileEntityHBMFluidTank extends TileEntityMachineBase implements IFl
         return "hbmFluidTankTest";
     }
 
-    /**
-     * Riempie la tank interna con il fluido
-     * @param type Fluido che entra nella tank
-     * @param pressure Pressione del fluido
-     * @param amount Volume del fluido da immettere nella tank
-     * @return Volume di fluido rimasto che non può entrare
-     */
     public long transferFluid(FluidType type, int pressure, long amount) {
         long toTransfer = Math.min(getDemand(type, pressure), amount);
         tank.setFill(tank.getFill() + (int) toTransfer);
         return amount - toTransfer;
     }
 
-    /**
-     * Calcola il volume di un fluido presente nella tank
-     * @param type Fluido richiesto
-     * @param pressure Pressione del fluido
-     * @return Volume del fluido presente nella tank
-     */
     public long getFluidAvailable(FluidType type, int pressure) {
         long amount = 0;
         for(FluidTank tank : getSendingTanks()) {
@@ -111,12 +91,6 @@ public class TileEntityHBMFluidTank extends TileEntityMachineBase implements IFl
         return amount;
     }
 
-    /**
-     * Rimuove un certo volume di fluido dalle tank interne in modo equo
-     * @param type Fluido da rimuovere
-     * @param pressure Pressione del fluido
-     * @param amount Volume da rimuovere
-     */
     public void useUpFluid(FluidType type, int pressure, long amount) {
         int tanks = 0;
         for(FluidTank tank : getSendingTanks()) {
@@ -141,60 +115,49 @@ public class TileEntityHBMFluidTank extends TileEntityMachineBase implements IFl
         }
     }
 
-    /**
-     * Aggiornamento della tile entity lato server:
-     * - In modalità BUFFER crea/aggiorna un nodo proprio e si registra sia come provider che receiver,
-     *   agendo come ponte all'interno del network dei fluidi.
-     * - In altre modalità interagisce coi nodi vicini:
-     *   - SENDER invia fluido ai nodi connessi
-     *   - RECEIVER si registra come ricevitore dai nodi connessi
-     *   - altre modalità rimuovono i collegamenti esistenti
-     */
     @Override
     public void updateEntity() {
         if(mode == TankModes.DISABLED.ordinal && this.node != null) {
-            UniNodespace.destroyNode(worldObj, xCoord, yCoord, zCoord, tank.getTankType().getNetworkProvider());
+            UniNodespace.destroyNode(worldObj, xCoord, yCoord, zCoord, tank.toHBM().getTankType().getNetworkProvider());
             this.node = null;
             return;
         }
 
         if(!worldObj.isRemote) {
-            // In buffer mode, acts like a pipe block, providing fluid to its own node
-            // otherwise, it is a regular providing/receiving machine, blocking further propagation
             if(mode == TankModes.BUFFER.ordinal) {
-                if(this.node == null || this.node.expired || tank.getTankType() != lastType) { // Se il nodo non è disponbile, va ricavato dal network
+                if(this.node == null || this.node.expired || tank.toHBM().getTankType() != lastType) {
 
-                    this.node = (FluidNode) UniNodespace.getNode(worldObj, xCoord, yCoord, zCoord, tank.getTankType().getNetworkProvider());
+                    this.node = (FluidNode) UniNodespace.getNode(worldObj, xCoord, yCoord, zCoord, tank.toHBM().getTankType().getNetworkProvider());
 
-                    if(this.node == null || this.node.expired || tank.getTankType() != lastType) { // Se il nodo ancora non è disponibile, lo rigeneriamo
-                        this.node = this.createNode(tank.getTankType());
+                    if(this.node == null || this.node.expired || tank.toHBM().getTankType() != lastType) {
+                        this.node = this.createNode(tank.toHBM().getTankType());
                         UniNodespace.createNode(worldObj, this.node);
-                        lastType = tank.getTankType();
+                        lastType = tank.toHBM().getTankType();
                     }
                 }
 
-                if(node != null && node.hasValidNet()) { // Se il nodo è finalmente disponibile, lo marchiamo come provider e receiver
+                if(node != null && node.hasValidNet()) {
                     node.net.addProvider(this);
                     node.net.addReceiver(this);
                 }
-            } else { // Se non siamo in modalità buffer, eliminiamo il nodo corrente
+            } else {
                 if(this.node != null) {
-                    UniNodespace.destroyNode(worldObj, xCoord, yCoord, zCoord, tank.getTankType().getNetworkProvider());
+                    UniNodespace.destroyNode(worldObj, xCoord, yCoord, zCoord, tank.toHBM().getTankType().getNetworkProvider());
                     this.node = null;
                 }
 
-                for(DirPos pos : getConPos()) { // Per ogni connessione, generiamo un nodo appropriato
-                    FluidNode dirNode = (FluidNode) UniNodespace.getNode(worldObj, pos.getX(), pos.getY(), pos.getZ(), tank.getTankType().getNetworkProvider());
+                for(DirPos pos : getConPos()) {
+                    FluidNode dirNode = (FluidNode) UniNodespace.getNode(worldObj, pos.getX(), pos.getY(), pos.getZ(), tank.toHBM().getTankType().getNetworkProvider());
 
-                    if(mode == TankModes.SENDER.ordinal) { // Se siamo in modalità sender, inviamo del fluido al nodo target
-                        tryProvide(tank, worldObj, pos.getX(), pos.getY(), pos.getZ(), pos.getDir());
-                    } else { // Altrimenti, eliminiamo un eventuale nodo a cui invieremmo il fluido
+                    if(mode == TankModes.SENDER.ordinal) {
+                        tryProvide(tank.toHBM(), worldObj, pos.getX(), pos.getY(), pos.getZ(), pos.getDir());
+                    } else {
                         if(dirNode != null && dirNode.hasValidNet()) dirNode.net.removeProvider(this);
                     }
 
-                    if(mode == TankModes.RECEIVER.ordinal) { // Se siamo in modalità receiver, marchiamo il nodo target come punto da cui ricevere del fluido
+                    if(mode == TankModes.RECEIVER.ordinal) {
                         if(dirNode != null && dirNode.hasValidNet()) dirNode.net.addReceiver(this);
-                    } else { // Altrimenti, eliminiamo un eventuale nodo da cui riceveremmo del fluido
+                    } else {
                         if(dirNode != null && dirNode.hasValidNet()) dirNode.net.removeReceiver(this);
                     }
                 }
@@ -203,11 +166,6 @@ public class TileEntityHBMFluidTank extends TileEntityMachineBase implements IFl
         }
     }
 
-    /**
-     * Restituisce una collezione di posizioni in cui la tank può essere connessa al network dei fluidi
-     * Questo è il caso di un blocco a sei facce
-     * @return Array di posizione, dove ogni posizione è una possibile connessione al network di fluidi
-     */
     protected DirPos[] getConPos() {
         return new DirPos[] {
                 new DirPos(xCoord + 1, yCoord, zCoord, Library.POS_X),
@@ -219,11 +177,6 @@ public class TileEntityHBMFluidTank extends TileEntityMachineBase implements IFl
         };
     }
 
-    /**
-     * Genera un nodo del network di fluidi che descrive la posizione di ogni connettore di tile entity
-     * @param type Fluido del nodo
-     * @return Un nodo nuovo per il network di fluidi
-     */
     protected FluidNode createNode(FluidType type) {
         DirPos[] conPos = getConPos();
 
@@ -237,11 +190,13 @@ public class TileEntityHBMFluidTank extends TileEntityMachineBase implements IFl
         return new FluidNode(type.getNetworkProvider(), posSet.toArray(new BlockPos[posSet.size()])).setConnections(conPos);
     }
 
+    /// FORGE-RELEVANT IMPLEMENTATION ///
+
     @Override
     public void writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
         NBTTagCompound tankTag = new NBTTagCompound();
-        tank.writeToNBT(tankTag, "tank");
+        tank.writeToNBT(tankTag);
         tag.setTag("Tank", tankTag);
     }
 
@@ -249,7 +204,7 @@ public class TileEntityHBMFluidTank extends TileEntityMachineBase implements IFl
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
         if (tag.hasKey("Tank")) {
-            tank.readFromNBT(tag.getCompoundTag("Tank"), "tank");
+            tank.readFromNBT(tag.getCompoundTag("Tank"));
         }
     }
 
@@ -263,5 +218,35 @@ public class TileEntityHBMFluidTank extends TileEntityMachineBase implements IFl
     @Override
     public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity pkt) {
         this.readFromNBT(pkt.func_148857_g());
+    }
+
+    @Override
+    public int fill(ForgeDirection from, FluidStack resource, boolean doFill) {
+        return tank.fill(UnifiedFluidStack.fromForge(resource, resource.amount), doFill);
+    }
+
+    @Override
+    public FluidStack drain(ForgeDirection from, FluidStack resource, boolean doDrain) {
+        return this.drain(from, resource.amount, doDrain);
+    }
+
+    @Override
+    public FluidStack drain(ForgeDirection from, int maxDrain, boolean doDrain) {
+        return tank.drain(maxDrain, doDrain).toForge();
+    }
+
+    @Override
+    public boolean canFill(ForgeDirection from, Fluid fluid) {
+        return true;
+    }
+
+    @Override
+    public boolean canDrain(ForgeDirection from, Fluid fluid) {
+        return true;
+    }
+
+    @Override
+    public FluidTankInfo[] getTankInfo(ForgeDirection from) {
+        return new FluidTankInfo[]{tank.toForge().getInfo()};
     }
 }
