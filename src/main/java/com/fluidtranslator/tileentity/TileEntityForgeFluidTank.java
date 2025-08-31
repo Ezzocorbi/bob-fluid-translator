@@ -198,7 +198,7 @@ public class TileEntityForgeFluidTank extends TileEntity implements IFluidHandle
     public void updateEntity() {
         ItemStack stackIn = this.getStackInSlot(0);
         ItemStack stackOut = this.getStackInSlot(1);
-        if (stackIn == null || stackOut != null) {
+        if (stackIn == null || stackOut != null || stackIn.stackSize > 1) {
             return;
         }
 
@@ -211,7 +211,8 @@ public class TileEntityForgeFluidTank extends TileEntity implements IFluidHandle
                     this.setInventorySlotContents(0, null);
                     this.setInventorySlotContents(1, new ItemStack(Items.bucket));
                 }
-            } else { // Bucket is empty: attempt transfer tank -> bucket
+            } else {
+                // Bucket is empty: attempt transfer tank -> bucket
                 if (forgeTank.getFluidAmount() < FluidContainerRegistry.BUCKET_VOLUME) return;
                 FluidStack drained = forgeTank.drain(FluidContainerRegistry.BUCKET_VOLUME, true);
                 if (drained == null) return;
