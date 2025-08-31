@@ -30,16 +30,6 @@ public class BlockForgeFluidTank extends BlockContainer {
         if (!world.isRemote) {
             player.openGui(FluidTranslator.instance, 0, world, x, y, z); // 0 = GUI ID
         }
-        TileEntity te = world.getTileEntity(x, y, z);
-        if (te instanceof TileEntityForgeFluidTank) {
-            TileEntityForgeFluidTank tank = (TileEntityForgeFluidTank) te;
-            FluidStack fluidStack = tank.getTankInfo(ForgeDirection.getOrientation(side))[0].fluid;
-            if (fluidStack != null) {
-                player.addChatMessage(new ChatComponentText(fluidStack.getFluid().getName() + " | " + fluidStack.amount));
-            } else {
-                player.addChatMessage(new ChatComponentText("Empty"));
-            }
-        }
         return true;
     }
 }
