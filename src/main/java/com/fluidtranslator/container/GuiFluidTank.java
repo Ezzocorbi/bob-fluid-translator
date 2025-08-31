@@ -38,7 +38,7 @@ public class GuiFluidTank extends GuiInfoContainer {
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
-        mc.getTextureManager().bindTexture(texture); // bind fluid's texture
+        mc.getTextureManager().bindTexture(texture); // bind GUI texture
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 
         FluidTankInfo tankInfo = tank.getTankInfo(ForgeDirection.UP)[0];
@@ -48,10 +48,9 @@ public class GuiFluidTank extends GuiInfoContainer {
             int xStart = xLeftPixel;
             int yStart = yTopPixel + tankHeight;
             int capacity = tankInfo.capacity;
-            int scaledFluidHeight = (int)((float)fluid.amount / capacity * tankHeight); // this ensures the fluid is rendered at the correct y-height
             drawFluid(fluid,
-                    guiLeft + xStart, guiTop + yStart - scaledFluidHeight,
-                    tankWidth, scaledFluidHeight);
+                    guiLeft + xStart, guiTop + yStart,
+                    tankWidth, tankHeight);
 
             // Setup and draw tank info
             String[] info = new String[] {
@@ -86,8 +85,8 @@ public class GuiFluidTank extends GuiInfoContainer {
 
         double minX = x;
         double maxX = x + width;
-        double minY = y + height - fill; // y = minY corresponds to top, y = maxY corresponds to bottom
-        double maxY = y + height;
+        double minY = y - fill; // y = minY corresponds to top, y = maxY corresponds to bottom
+        double maxY = y;
 
         double minU = 0;
         double maxU = width / 16D;
