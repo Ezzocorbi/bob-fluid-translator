@@ -4,7 +4,6 @@ import com.fluidtranslator.blocks.BlockForgeFluidTank;
 import com.fluidtranslator.blocks.BlockHBMFluidTank;
 import com.fluidtranslator.blocks.BlockHBMWrapperFluidTank;
 import com.fluidtranslator.blocks.BlockUniversalTank;
-import com.fluidtranslator.gui.GuiHandler;
 import com.fluidtranslator.proxy.CommonProxy;
 import com.fluidtranslator.tileentity.TileEntityForgeFluidTank;
 import com.fluidtranslator.tileentity.TileEntityHBMFluidTank;

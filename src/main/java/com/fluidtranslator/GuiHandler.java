@@ -1,4 +1,4 @@
-package com.fluidtranslator.gui;
+package com.fluidtranslator;
 
 import com.fluidtranslator.container.ContainerFluidTank;
 import com.fluidtranslator.container.GuiFluidTank;

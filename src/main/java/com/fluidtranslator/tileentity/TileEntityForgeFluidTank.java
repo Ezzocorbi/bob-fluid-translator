@@ -1,6 +1,7 @@
 package com.fluidtranslator.tileentity;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -190,6 +191,55 @@ public class TileEntityForgeFluidTank extends TileEntity implements IFluidHandle
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack itemStack) {
-        return false;
+        return true;
+    }
+
+    @Override
+    public void updateEntity() {
+        ItemStack stackIn = this.getStackInSlot(0);
+        ItemStack stackOut = this.getStackInSlot(1);
+        if (stackIn == null || stackOut != null) {
+            return;
+        }
+
+        if (FluidContainerRegistry.isBucket(stackIn)) { // Handle buckets
+            FluidStack fluidStack = FluidContainerRegistry.getFluidForFilledItem(stackIn);
+            if (fluidStack != null) {
+                // Bucket is full: attempt transfer bucket -> tank
+                int filled = forgeTank.fill(fluidStack, true);
+                if (filled > 0) {
+                    this.setInventorySlotContents(0, null);
+                    this.setInventorySlotContents(1, new ItemStack(Items.bucket));
+                }
+            } else { // Bucket is empty: attempt transfer tank -> bucket
+                if (forgeTank.getFluidAmount() < FluidContainerRegistry.BUCKET_VOLUME) return;
+                FluidStack drained = forgeTank.drain(FluidContainerRegistry.BUCKET_VOLUME, true);
+                if (drained == null) return;
+                if (drained.amount > 0) {
+                    this.setInventorySlotContents(0, null);
+                    stackIn = FluidContainerRegistry.fillFluidContainer(drained, stackIn);
+                    if (stackIn == null) return;
+                    this.setInventorySlotContents(1, stackIn);
+                }
+            }
+        } else if (stackIn.getItem() instanceof IFluidContainerItem) {
+            // Container has fluid: attempt transfer container -> tank
+            IFluidContainerItem containerItem = (IFluidContainerItem)stackIn.getItem();
+            FluidStack fluidStack = containerItem.getFluid(stackIn);
+            if (fluidStack != null) {
+                int filled = forgeTank.fill(fluidStack, true);
+                containerItem.drain(stackIn, filled, true);
+                if (filled > 0) {
+                    this.setInventorySlotContents(0, null);
+                    this.setInventorySlotContents(1, stackIn);
+                }
+            } else {
+                // Container is empty: attempt transfer tank -> container
+                FluidStack drained = forgeTank.drain(containerItem.getCapacity(stackIn), true);
+                this.setInventorySlotContents(0, null);
+                containerItem.fill(stackIn, drained, true);
+                this.setInventorySlotContents(1, stackIn);
+            }
+        }
     }
 }
