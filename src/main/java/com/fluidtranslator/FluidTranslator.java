@@ -18,8 +18,7 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
-
-import java.util.ArrayList;
+import net.minecraftforge.common.MinecraftForge;
 
 @Mod(modid = FluidTranslator.MODID, version = FluidTranslator.VERSION, dependencies = "required-after:hbm")
 public class FluidTranslator
@@ -37,16 +36,10 @@ public class FluidTranslator
     @EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
-        ArrayList<String> fluidBlacklist = new ArrayList<String>();
-        fluidBlacklist.add("none");
-        fluidBlacklist.add("custom_demo");
-
         // Register HBM's fluids
         CustomFluidRegistry ft = new CustomFluidRegistry();
         for(FluidType f : Fluids.getAll()) {
-            if(fluidBlacklist.contains(f.getName().toLowerCase())) {
-                continue;
-            }
+            if (CustomFluidRegistry.isBlackListed(f)) continue;
             ft.registerFluidType(f);
         }
 
@@ -69,6 +62,7 @@ public class FluidTranslator
     public void init(FMLInitializationEvent event)
     {
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
+        MinecraftForge.EVENT_BUS.register(new CustomEventHandler());
     }
 
 }

@@ -1,27 +1,29 @@
 package com.fluidtranslator;
 
-import com.fluidtranslator.container.ContainerFluidTank;
-import com.fluidtranslator.container.GuiFluidTank;
-import com.fluidtranslator.tileentity.TileEntityForgeFluidTank;
+import com.fluidtranslator.item.GenericBucket;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
-import cpw.mods.fml.common.network.IGuiHandler;
 import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.block.material.Material;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class CustomFluidRegistry {
 
-    public CustomFluidRegistry() {
+    private static final Set<String> blackList = new HashSet<String>();
 
+    public CustomFluidRegistry() {
+        blackList.add(Fluids.NONE.getName());
+        blackList.add(Fluids.LAVA.getName());
+        blackList.add(Fluids.WATER.getName());
+        blackList.add("CUSTOM_DEMO");
     }
 
     public CustomFluidBlock registerFluidType(FluidType fluidType) {
@@ -61,5 +63,14 @@ public class CustomFluidRegistry {
      */
     public static Fluid getForgeFluid(FluidType fluidType) {
         return FluidRegistry.getFluid(fluidType.getName().toLowerCase());
+    }
+
+    /**
+     *
+     * @param fluidType Fluid to check
+     * @return Returns true if the fluid should not be registered
+     */
+    public static boolean isBlackListed(FluidType fluidType) {
+        return blackList.contains(fluidType.getName());
     }
 }

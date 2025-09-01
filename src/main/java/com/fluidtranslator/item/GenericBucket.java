@@ -1,4 +1,4 @@
-package com.fluidtranslator;
+package com.fluidtranslator.item;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -14,7 +14,9 @@ import net.minecraftforge.fluids.Fluid;
 public class GenericBucket extends ItemBucket {
 
     @SideOnly(Side.CLIENT)
-    private IIcon icon;
+    private IIcon baseIcon;
+//    @SideOnly(Side.CLIENT)
+//    private IIcon fluidOverlay;
 
     public GenericBucket(Fluid fluid, Block block) {
         super(block);
@@ -31,6 +33,6 @@ public class GenericBucket extends ItemBucket {
     @Override
     @SideOnly(Side.CLIENT)
     public void registerIcons(IIconRegister iconRegister) {
-        this.icon = iconRegister.registerIcon("minecraft:bucket_empty");
+        this.baseIcon = iconRegister.registerIcon("minecraft:bucket_empty");
     }
 }
