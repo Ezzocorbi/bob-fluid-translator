@@ -37,8 +37,7 @@ public class FluidAtlasSprite extends TextureAtlasSprite {
             BufferedImage texImg = ImageIO.read(Minecraft.getMinecraft().getResourceManager().getResource(loc).getInputStream());
             int[] buffer = new int[texImg.getHeight() * texImg.getWidth()];
 
-            int min = Math.min(texImg.getWidth(), texImg.getWidth());
-            int size = (int)(1 + Math.log10(min) / Math.log10(2));
+            int size = (int)(1 + Math.log10(texImg.getWidth()) / Math.log10(2)); // this equals to 1 + log base 2 of texImg.getWidth()
             int[][] mipmaps = new int[size][];
             texImg.getRGB(0, 0, texImg.getWidth(), texImg.getHeight(), buffer, 0, texImg.getWidth());
             Arrays.fill(mipmaps, buffer);
