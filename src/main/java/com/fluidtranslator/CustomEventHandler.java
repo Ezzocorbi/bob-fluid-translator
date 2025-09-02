@@ -1,5 +1,6 @@
 package com.fluidtranslator;
 
+import com.fluidtranslator.item.GenericBucket;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -9,6 +10,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidContainerRegistry;
 
 public class CustomEventHandler {
 
@@ -21,7 +23,14 @@ public class CustomEventHandler {
                 if (CustomFluidRegistry.isBlackListed(fluid)) continue;
                 String spriteName = FluidTranslator.MODID + ":" + fluid.getName().toLowerCase() + "_texture";
                 FluidAtlasSprite sprite = new FluidAtlasSprite(spriteName, fluid);
-                System.out.println(fluid.getName());
+                event.map.setTextureEntry(sprite.getIconName(), sprite);
+            }
+        } else if (event.map.getTextureType() == 1) { // 1 = items
+            FluidType[] fluids = Fluids.getAll();
+            for (FluidType fluid : fluids) {
+                if (CustomFluidRegistry.isBlackListed(fluid)) continue;
+                String spriteName = FluidTranslator.MODID + ":" + fluid.getName().toLowerCase() + "_bucket";
+                BucketAtlasSprite sprite = new BucketAtlasSprite(spriteName, fluid);
                 event.map.setTextureEntry(sprite.getIconName(), sprite);
             }
         }
@@ -44,6 +53,17 @@ public class CustomEventHandler {
                     CustomFluidBlock fluidBlock = (CustomFluidBlock) b;
                     fluidBlock.setIcons(sprite); // Apply the texture to the fluid's block
                 }
+            }
+        } else if (event.map.getTextureType() == 1) {
+            FluidType[] fluids = Fluids.getAll();
+            for (FluidType fluidType : fluids) {
+                if (CustomFluidRegistry.isBlackListed(fluidType)) continue;
+                String spriteName = FluidTranslator.MODID + ":" + fluidType.getName().toLowerCase() + "_bucket";
+                TextureAtlasSprite sprite = event.map.getAtlasSprite(spriteName);
+
+                Fluid forgeFluid = CustomFluidRegistry.getForgeFluid(fluidType);
+                if (forgeFluid == null) continue;
+                GenericBucket.getBuckerForFluid(forgeFluid).setIcon(sprite);
             }
         }
     }

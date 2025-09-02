@@ -32,11 +32,11 @@ public class CustomFluidRegistry {
         FluidRegistry.registerFluid(forgeFluid);
 
         CustomFluidBlock block = new CustomFluidBlock(forgeFluid, Material.water, name);
-        GameRegistry.registerBlock(block, name + "block");
+        GameRegistry.registerBlock(block, name + "_block");
         forgeFluid.setBlock(block);
 
         GenericBucket genericBucket = new GenericBucket(forgeFluid, block);
-        GameRegistry.registerItem(genericBucket, name + "bucket");
+        GameRegistry.registerItem(genericBucket, name + "_bucket");
 
         FluidContainerRegistry.registerFluidContainer(
                 new FluidStack(forgeFluid, FluidContainerRegistry.BUCKET_VOLUME),
