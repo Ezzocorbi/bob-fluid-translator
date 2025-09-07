@@ -1,14 +1,9 @@
 package com.fluidtranslator;
 
-import com.fluidtranslator.blocks.BlockForgeFluidTank;
-import com.fluidtranslator.blocks.BlockHBMFluidTank;
-import com.fluidtranslator.blocks.BlockHBMWrapperFluidTank;
-import com.fluidtranslator.blocks.BlockUniversalTank;
+import com.fluidtranslator.blocks.*;
+import com.fluidtranslator.container.GuiHandler;
 import com.fluidtranslator.proxy.CommonProxy;
-import com.fluidtranslator.tileentity.TileEntityForgeFluidTank;
-import com.fluidtranslator.tileentity.TileEntityHBMFluidTank;
-import com.fluidtranslator.tileentity.TileEntityHBMWrapper;
-import com.fluidtranslator.tileentity.TileEntityUniversalTank;
+import com.fluidtranslator.tileentity.*;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import cpw.mods.fml.common.Mod;
@@ -47,11 +42,13 @@ public class FluidTranslator
         GameRegistry.registerBlock(new BlockForgeFluidTank(), "simpleFluidTank");
         GameRegistry.registerBlock(new BlockHBMWrapperFluidTank(), "hbmToForgeTank");
         GameRegistry.registerBlock(new BlockUniversalTank(), "universalTank");
+        GameRegistry.registerBlock(new BlockHBMAdapter(), "hbmInterface");
 
         // Register tile entities
         GameRegistry.registerTileEntity(TileEntityForgeFluidTank.class, "teSimpleFluidTank");
         GameRegistry.registerTileEntity(TileEntityHBMWrapper.class, "teHBMWrapperTank");
         GameRegistry.registerTileEntity(TileEntityUniversalTank.class, "teUniversalTank");
+        GameRegistry.registerTileEntity(TileEntityHBMAdapter.class, "teHBMInterface");
 
         // HBM specific stuff
         GameRegistry.registerBlock(new BlockHBMFluidTank(), "simpleHBMTank");

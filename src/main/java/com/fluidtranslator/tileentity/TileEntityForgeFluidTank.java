@@ -170,11 +170,6 @@ public class TileEntityForgeFluidTank extends TileEntity implements IFluidHandle
     }
 
     @Override
-    public int getInventoryStackLimit() {
-        return 64;
-    }
-
-    @Override
     public boolean isUseableByPlayer(EntityPlayer p_70300_1_) {
         return false;
     }
@@ -195,10 +190,15 @@ public class TileEntityForgeFluidTank extends TileEntity implements IFluidHandle
     }
 
     @Override
-    public void updateEntity() {
+    public int getInventoryStackLimit() {
+        return 1;
+    }
+
+    @Override
+    public void updateEntity() { // TODO: make this tank work with stack sizes greater than 1
         ItemStack stackIn = this.getStackInSlot(0);
         ItemStack stackOut = this.getStackInSlot(1);
-        if (stackIn == null || stackOut != null || stackIn.stackSize > 1) {
+        if (stackIn == null || stackOut != null) {
             return;
         }
 
@@ -209,7 +209,7 @@ public class TileEntityForgeFluidTank extends TileEntity implements IFluidHandle
                 int filled = forgeTank.fill(fluidStack, true);
                 if (filled > 0) {
                     this.setInventorySlotContents(0, null);
-                    this.setInventorySlotContents(1, new ItemStack(Items.bucket));
+                    this.setInventorySlotContents(1, new ItemStack(Items.bucket, 1));
                 }
             } else {
                 // Bucket is empty: attempt transfer tank -> bucket

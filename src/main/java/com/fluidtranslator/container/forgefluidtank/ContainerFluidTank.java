@@ -1,4 +1,4 @@
-package com.fluidtranslator.container;
+package com.fluidtranslator.container.forgefluidtank;
 
 import com.fluidtranslator.tileentity.TileEntityForgeFluidTank;
 import net.minecraft.entity.player.EntityPlayer;
@@ -6,13 +6,10 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.fluids.FluidContainerRegistry;
 
 public class ContainerFluidTank extends Container {
-    private TileEntityForgeFluidTank tank;
 
     public ContainerFluidTank(InventoryPlayer playerInv, TileEntityForgeFluidTank tank) {
-        this.tank = tank;
 
         addSlotToContainer(new Slot(tank, 0, 23, 16));
         addSlotToContainer(new Slot(tank, 1, 23, 57));

@@ -1,8 +1,11 @@
-package com.fluidtranslator;
+package com.fluidtranslator.container;
 
-import com.fluidtranslator.container.ContainerFluidTank;
-import com.fluidtranslator.container.GuiFluidTank;
+import com.fluidtranslator.container.forgefluidtank.ContainerFluidTank;
+import com.fluidtranslator.container.forgefluidtank.GuiFluidTank;
+import com.fluidtranslator.container.hbmadapter.ContainerHBMAdapter;
+import com.fluidtranslator.container.hbmadapter.GuiHBMAdapter;
 import com.fluidtranslator.tileentity.TileEntityForgeFluidTank;
+import com.fluidtranslator.tileentity.TileEntityHBMAdapter;
 import cpw.mods.fml.common.network.IGuiHandler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
@@ -15,6 +18,8 @@ public class GuiHandler implements IGuiHandler {
         TileEntity te = world.getTileEntity(x, y, z);
         if (te instanceof TileEntityForgeFluidTank) {
             return new ContainerFluidTank(player.inventory, (TileEntityForgeFluidTank) te);
+        } else if (te instanceof TileEntityHBMAdapter) {
+            return new ContainerHBMAdapter(player.inventory, (TileEntityHBMAdapter) te);
         }
         return null;
     }
@@ -24,6 +29,8 @@ public class GuiHandler implements IGuiHandler {
         TileEntity te = world.getTileEntity(x, y, z);
         if (te instanceof TileEntityForgeFluidTank) {
             return new GuiFluidTank(player.inventory, (TileEntityForgeFluidTank) te);
+        } else if (te instanceof TileEntityHBMAdapter) {
+            return new GuiHBMAdapter(player.inventory, (TileEntityHBMAdapter) te);
         }
         return null;
     }
