@@ -44,7 +44,7 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
         if (mode == TankModes.BUFFER.ordinal || mode == TankModes.SENDER.ordinal)
             return new FluidTank[] {tank.toHBM()};
         else
-            return new FluidTank[0]; // Non restituisce alcuna tank
+            return new FluidTank[0];
     }
 
     @Override
@@ -52,7 +52,7 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
         if (mode == TankModes.BUFFER.ordinal || mode == TankModes.RECEIVER.ordinal)
             return new FluidTank[] {tank.toHBM()};
         else
-            return new FluidTank[0]; // Non restituisce alcuna tank
+            return new FluidTank[0];
     }
 
     @Override

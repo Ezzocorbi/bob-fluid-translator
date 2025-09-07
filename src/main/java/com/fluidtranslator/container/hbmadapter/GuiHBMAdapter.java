@@ -1,7 +1,10 @@
-package com.fluidtranslator.container;
+package com.fluidtranslator.container.hbmadapter;
 
 import com.fluidtranslator.CustomFluidRegistry;
+import com.fluidtranslator.FluidTranslator;
+import com.fluidtranslator.container.forgefluidtank.ContainerFluidTank;
 import com.fluidtranslator.tileentity.TileEntityForgeFluidTank;
+import com.fluidtranslator.tileentity.TileEntityHBMAdapter;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.gui.GuiInfoContainer;
 import cpw.mods.fml.relauncher.Side;
@@ -13,16 +16,16 @@ import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
 
-public class GuiFluidTank extends GuiInfoContainer {
-    private static final ResourceLocation texture = new ResourceLocation("bobfluidtranslator:textures/gui/fluid_tank.png");
-    private final TileEntityForgeFluidTank tank;
+public class GuiHBMAdapter extends GuiInfoContainer {
+    private static final ResourceLocation texture = new ResourceLocation(FluidTranslator.MODID + ":textures/gui/fluid_adapter.png");
+    private final TileEntityHBMAdapter tank;
     private final int xLeftPixel = 74; // left pixel where the tank starts
     private final int yTopPixel = 8; // top pixel where the tank starts
     private final int tankWidth = 28;
     private final int tankHeight = 70;
 
-    public GuiFluidTank(InventoryPlayer playerInv, TileEntityForgeFluidTank tank) {
-        super(new ContainerFluidTank(playerInv, tank));
+    public GuiHBMAdapter(InventoryPlayer playerInv, TileEntityHBMAdapter tank) {
+        super(new ContainerHBMAdapter(playerInv, tank));
         this.tank = tank;
         this.xSize = 176;
         this.ySize = 166;
@@ -41,7 +44,13 @@ public class GuiFluidTank extends GuiInfoContainer {
         mc.getTextureManager().bindTexture(texture); // bind GUI texture
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 
-        FluidTankInfo tankInfo = tank.getTankInfo(ForgeDirection.UP)[0];
+        FluidTankInfo[] tankInfoArr = tank.getTankInfo(ForgeDirection.UP);
+        if (tankInfoArr == null) {
+            drawTankInfo(new String[] {"No tank attached"}, mouseX, mouseY);
+            return;
+        }
+
+        FluidTankInfo tankInfo = tankInfoArr[0];
         FluidStack fluid = tankInfo.fluid;
         if (fluid != null && fluid.amount > 0) {
             // Setup and draw fluid in tank
