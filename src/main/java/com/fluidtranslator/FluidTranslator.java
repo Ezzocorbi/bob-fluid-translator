@@ -14,6 +14,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fluids.FluidRegistry;
 
 @Mod(modid = FluidTranslator.MODID, version = FluidTranslator.VERSION, dependencies = "required-after:hbm")
 public class FluidTranslator
@@ -35,6 +36,7 @@ public class FluidTranslator
         CustomFluidRegistry ft = new CustomFluidRegistry();
         for(FluidType f : Fluids.getAll()) {
             if (CustomFluidRegistry.isBlackListed(f)) continue;
+            if (FluidRegistry.getFluid(f.getName().toLowerCase() + "_fluid") != null) continue;
             ft.registerFluidType(f);
         }
 

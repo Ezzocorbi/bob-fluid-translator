@@ -165,8 +165,9 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
 
         // Look for corresponding fluid type from HBM
         FluidType type = CustomFluidRegistry.getHBMFluid(resource.getFluid());
-        if (type == null) return 0; // No correspondence to any HBM fluid
 
+        if (type == null) return 0; // No correspondence to any HBM fluid, don't fill
+        if (type.getID() == Fluids.NONE.getID()) return 0; // Don't fill with 'NONE' fluid
         if (!canFill(from, resource.getFluid())) return 0; // Incompatible fluids
 
         int toFill = Math.min(resource.amount, tank.getMaxFill() - tank.getFill());
@@ -195,8 +196,10 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         if (tank.getFill() <= 0) return null;
 
         int drained = Math.min(maxDrain, tank.getFill());
-        FluidStack fs = new FluidStack(CustomFluidRegistry.getForgeFluid(tank.getTankType()), drained);
+        Fluid fluid = CustomFluidRegistry.getForgeFluid(tank.getTankType());
+        if (fluid == null) return null; // No correspondence to any Forge fluid, don't drain
 
+        FluidStack fs = new FluidStack(fluid, drained);
         if (doDrain) {
             tank.setFill(tank.getFill() - drained);
             if (tank.getFill() <= 0) tank.setTankType(Fluids.NONE);
@@ -229,7 +232,11 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         if (fluidHandler == null) return null;
         FluidTank tank = fluidHandler.getAllTanks()[0];
         UnifiedFluidStack fluidStack = UnifiedFluidStack.fromHBM(tank.getTankType(), tank.getFill());
-        return new FluidTankInfo[]{ new FluidTankInfo(fluidStack.toForge(), tank.getMaxFill()) };
+        if (fluidStack.isEmpty()) {
+            return new FluidTankInfo[]{ new FluidTankInfo(null, tank.getMaxFill()) };
+        } else {
+            return new FluidTankInfo[]{ new FluidTankInfo(fluidStack.toForge(), tank.getMaxFill()) };
+        }
     }
 
     @Override

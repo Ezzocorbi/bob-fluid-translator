@@ -42,31 +42,37 @@ public class GuiHBMAdapter extends GuiInfoContainer {
         mc.getTextureManager().bindTexture(texture); // bind GUI texture
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 
-        FluidTankInfo[] tankInfoArr = tank.getTankInfo(ForgeDirection.UP);
-        if (tankInfoArr == null) {
-            drawTankInfo(new String[] {"No tank attached"}, mouseX, mouseY);
-            return;
-        }
+        try {
+            FluidTankInfo[] tankInfoArr = tank.getTankInfo(ForgeDirection.UP);
+            if (tankInfoArr == null) {
+                drawTankInfo(new String[] {"No tank attached"}, mouseX, mouseY);
+                return;
+            }
 
-        FluidTankInfo tankInfo = tankInfoArr[0];
-        FluidStack fluid = tankInfo.fluid;
-        if (fluid != null && fluid.amount > 0) {
-            // Setup and draw fluid in tank
-            int xStart = xLeftPixel;
-            int yStart = yTopPixel + tankHeight;
-            int capacity = tankInfo.capacity;
-            drawFluid(fluid,
-                    guiLeft + xStart, guiTop + yStart,
-                    tankWidth, tankHeight);
+            FluidTankInfo tankInfo = tankInfoArr[0];
+            FluidStack fluid = tankInfo.fluid;
+            if (fluid != null && fluid.amount > 0) {
+                // Setup and draw fluid in tank
+                int xStart = xLeftPixel;
+                int yStart = yTopPixel + tankHeight;
+                int capacity = tankInfo.capacity;
+                drawFluid(fluid,
+                        guiLeft + xStart, guiTop + yStart,
+                        tankWidth, tankHeight);
 
-            // Setup and draw tank info
-            String[] info = new String[] {
-                    fluid.getLocalizedName(),
-                    fluid.amount + "/" + capacity + "mB"
-            };
-            drawTankInfo(info, mouseX, mouseY);
-        } else {
-            drawTankInfo(new String[] {"Empty"}, mouseX, mouseY);
+                // Setup and draw tank info
+                String[] info = new String[] {
+                        fluid.getLocalizedName(),
+                        fluid.amount + "/" + capacity + "mB"
+                };
+                drawTankInfo(info, mouseX, mouseY);
+            } else {
+                drawTankInfo(new String[] {"Empty"}, mouseX, mouseY);
+            }
+        } catch (IllegalArgumentException e) {
+            drawTankInfo(new String[] {"Error: unable to render fluid"}, mouseX, mouseY);
+            System.err.println(String.format("An error occurred while trying to render the fluid contained in the tank at %d %d %d", tank.xCoord, tank.yCoord, tank.zCoord));
+            e.printStackTrace();
         }
     }
 

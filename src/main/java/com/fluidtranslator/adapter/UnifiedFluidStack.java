@@ -82,7 +82,7 @@ public class UnifiedFluidStack {
     }
 
     public boolean isEmpty() {
-        return hbmFluidStack.fill == 0;
+        return hbmFluidStack.fill == 0 || hbmFluidStack.type.getID() == Fluids.NONE.getID();
     }
 
     public boolean isSameFluid(UnifiedFluidStack stack) {

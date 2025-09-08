@@ -63,7 +63,11 @@ public class CustomEventHandler {
 
                 Fluid forgeFluid = CustomFluidRegistry.getForgeFluid(fluidType);
                 if (forgeFluid == null) continue;
-                GenericBucket.getBuckerForFluid(forgeFluid).setIcon(sprite);
+                System.out.println(fluidType.getName());
+                System.out.println(forgeFluid.getName());
+                GenericBucket bucket = GenericBucket.getBuckerForFluid(forgeFluid);
+                if (bucket == null) continue;
+                bucket.setIcon(sprite);
             }
         }
     }
