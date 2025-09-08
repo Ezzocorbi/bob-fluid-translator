@@ -1,9 +1,11 @@
 package com.fluidtranslator.adapter;
 
 import com.fluidtranslator.CustomFluidRegistry;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTank;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 
 /**
@@ -47,16 +49,12 @@ public class UnifiedFluidTank {
     }
 
     public net.minecraftforge.fluids.FluidTank toForge() {
-        FluidStack forgeFluidStack = new FluidStack(CustomFluidRegistry.getForgeFluid(hbmTank.getTankType()), getFill());
+        Fluid forgeFluid = CustomFluidRegistry.getForgeFluid(hbmTank.getTankType());
+        if (forgeFluid == null) {
+            return new net.minecraftforge.fluids.FluidTank(null, 0); // empty fluid tank
+        }
+        FluidStack forgeFluidStack = new FluidStack(forgeFluid, getFill());
         return new net.minecraftforge.fluids.FluidTank(forgeFluidStack, getCapacity());
-    }
-
-    public UnifiedFluidTank readFromNBT(NBTTagCompound nbt) {
-        return null;
-    }
-
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
-        return null;
     }
 
     public int getFill() {
@@ -147,5 +145,21 @@ public class UnifiedFluidTank {
 
     public void setFluid(UnifiedFluid fluid) {
         hbmTank.setTankType(fluid.toHBM());
+    }
+
+    public NBTTagCompound writeToNBT() {
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setInteger("fluidId", hbmTank.getTankType().getID());
+        tag.setInteger("fill", this.getFill());
+        return tag;
+    }
+
+    public void readFromNBT(NBTTagCompound tag) {
+        int fluidId = tag.getInteger("fluidId");
+        UnifiedFluid fluid = UnifiedFluid.fromHBM(Fluids.fromID(fluidId));
+        this.setFluid(fluid);
+
+        int fill = tag.getInteger("fill");
+        this.setFill(fill);
     }
 }

@@ -4,6 +4,7 @@ import api.hbm.fluidmk2.IFluidStandardTransceiverMK2;
 import com.fluidtranslator.CustomFluidRegistry;
 import com.fluidtranslator.adapter.UnifiedFluidStack;
 import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.fluid.GenericFluid;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTank;
@@ -213,7 +214,6 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         if (incomingFluid == null) return false;
         if (storedFluid.getID() == Fluids.NONE.getID()) return true;
         if (storedFluid.getID() == incomingFluid.getID()) return true;
-        System.out.println("different fluids");
         return false;
     }
 
@@ -221,7 +221,7 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     public boolean canDrain(ForgeDirection from, Fluid fluid) {
         if (fluidHandler == null) return false;
         FluidTank tank = fluidHandler.getAllTanks()[0];
-        return tank.getTankType() == CustomFluidRegistry.getHBMFluid(fluid);
+        return tank.getTankType().getID() == CustomFluidRegistry.getHBMFluid(fluid).getID();
     }
 
     @Override
@@ -356,7 +356,7 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     }
 
     @Override
-    public boolean isItemValidForSlot(int slot, ItemStack itemStack) {
-        return true;
+    public boolean isItemValidForSlot(int p_94041_1_, ItemStack p_94041_2_) {
+        return false;
     }
 }

@@ -2,6 +2,7 @@ package com.fluidtranslator.tileentity;
 
 import api.hbm.fluidmk2.FluidNode;
 import api.hbm.fluidmk2.IFluidStandardTransceiverMK2;
+import com.fluidtranslator.CustomFluidRegistry;
 import com.fluidtranslator.TankModes;
 import com.fluidtranslator.adapter.UnifiedFluidStack;
 import com.fluidtranslator.adapter.UnifiedFluidTank;
@@ -13,6 +14,8 @@ import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.uninos.UniNodespace;
 import com.hbm.util.fauxpointtwelve.BlockPos;
 import com.hbm.util.fauxpointtwelve.DirPos;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
@@ -34,7 +37,8 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
 
     public TileEntityUniversalTank() {
         super(1);
-        tank = new UnifiedFluidTank(2000);
+        slots = new ItemStack[2];
+        tank = new UnifiedFluidTank(4000);
     }
 
     /// HBM-RELEVANT IMPLEMENTATION ///
@@ -195,16 +199,15 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
     @Override
     public void writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
-        NBTTagCompound tankTag = new NBTTagCompound();
-        tank.writeToNBT(tankTag);
-        tag.setTag("Tank", tankTag);
+        NBTTagCompound tankTag = tank.writeToNBT();
+        tag.setTag("tank", tankTag);
     }
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
-        if (tag.hasKey("Tank")) {
-            tank.readFromNBT(tag.getCompoundTag("Tank"));
+        if (tag.hasKey("tank")) {
+            tank.readFromNBT(tag.getCompoundTag("tank"));
         }
     }
 
@@ -212,27 +215,41 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
     public Packet getDescriptionPacket() {
         NBTTagCompound nbtTag = new NBTTagCompound();
         this.writeToNBT(nbtTag);
+        System.out.println("Sending packet");
         return new S35PacketUpdateTileEntity(this.xCoord, this.yCoord, this.zCoord, 1, nbtTag);
     }
 
     @Override
     public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity pkt) {
+        System.out.println("Received packet");
         this.readFromNBT(pkt.func_148857_g());
     }
 
     @Override
     public int fill(ForgeDirection from, FluidStack resource, boolean doFill) {
-        return tank.fill(UnifiedFluidStack.fromForge(resource, resource.amount), doFill);
+        int filled = tank.fill(UnifiedFluidStack.fromForge(resource), doFill);
+        if(filled > 0 && doFill) {
+            this.markDirtyAndUpdate();
+        }
+        return filled;
     }
 
     @Override
     public FluidStack drain(ForgeDirection from, FluidStack resource, boolean doDrain) {
-        return this.drain(from, resource.amount, doDrain);
+        UnifiedFluidStack drained = tank.drain(resource.amount, doDrain);
+        if(drained != null && doDrain) {
+            this.markDirtyAndUpdate();
+        }
+        return drained.toForge();
     }
 
     @Override
     public FluidStack drain(ForgeDirection from, int maxDrain, boolean doDrain) {
-        return tank.drain(maxDrain, doDrain).toForge();
+        UnifiedFluidStack drained = tank.drain(maxDrain, doDrain);
+        if(drained != null && doDrain) {
+            this.markDirtyAndUpdate();
+        }
+        return drained.toForge();
     }
 
     @Override
@@ -242,11 +259,120 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
 
     @Override
     public boolean canDrain(ForgeDirection from, Fluid fluid) {
-        return true;
+        return tank.toHBM().getTankType() == CustomFluidRegistry.getHBMFluid(fluid);
     }
 
     @Override
     public FluidTankInfo[] getTankInfo(ForgeDirection from) {
         return new FluidTankInfo[]{tank.toForge().getInfo()};
+    }
+
+    ///  INVENTORY HANDLING ///
+
+    @Override
+    public int getSizeInventory() {
+        return slots.length;
+    }
+
+    @Override
+    public ItemStack getStackInSlot(int slot) {
+        if (slot < slots.length) {
+            return slots[slot];
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Removes from an inventory slot (first arg) up to a specified number (second arg) of items and returns them in a
+     * new stack.
+     */
+    @Override
+    public ItemStack decrStackSize(int slot, int amount) {
+        if (this.slots[slot] != null) {
+            ItemStack stack;
+
+            if (this.slots[slot].stackSize <= amount) {
+                // If the stack is smaller than the requested amount
+                stack = this.slots[slot];
+                this.slots[slot] = null;
+                return stack;
+            } else {
+                stack = this.slots[slot].splitStack(amount);
+
+                if (this.slots[slot].stackSize == 0) {
+                    this.slots[slot] = null;
+                }
+
+                return stack;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * When some containers are closed they call this on each slot, then drop whatever it returns as an EntityItem -
+     * like when you close a workbench GUI.
+     */
+    @Override
+    public ItemStack getStackInSlotOnClosing(int slot) {
+        if(slots[slot] != null) {
+            ItemStack stack = slots[slot];
+            slots[slot] = null;
+            return stack;
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public void setInventorySlotContents(int slot, ItemStack itemStack) {
+        slots[slot] = itemStack;
+        if(itemStack != null && itemStack.stackSize > this.getInventoryStackLimit()) {
+            itemStack.stackSize = this.getInventoryStackLimit();
+        }
+    }
+
+    @Override
+    public String getInventoryName() {
+        return "forgeFluidTankInventory";
+    }
+
+    @Override
+    public boolean hasCustomInventoryName() {
+        return true;
+    }
+
+    @Override
+    public boolean isUseableByPlayer(EntityPlayer p_70300_1_) {
+        return false;
+    }
+
+    @Override
+    public void openInventory() {
+
+    }
+
+    @Override
+    public void closeInventory() {
+
+    }
+
+    @Override
+    public boolean isItemValidForSlot(int slot, ItemStack itemStack) {
+        return true;
+    }
+
+    @Override
+    public int getInventoryStackLimit() {
+        return 1;
+    }
+
+    public void markDirtyAndUpdate() {
+        this.markDirty();
+        if (worldObj != null && !worldObj.isRemote) {
+            worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+        }
     }
 }

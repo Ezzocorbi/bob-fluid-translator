@@ -1,7 +1,7 @@
 package com.fluidtranslator.container;
 
 public enum GuiIds {
-    SIMPLE_FLUID_TANK(0),
+    UNIVERSAL_TANK(0),
     HBM_ADAPTER(1);
 
     public final int ordinal;
