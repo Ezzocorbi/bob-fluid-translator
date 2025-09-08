@@ -1,6 +1,7 @@
 package com.fluidtranslator;
 
 import com.fluidtranslator.item.GenericBucket;
+import com.google.common.collect.HashBiMap;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -15,19 +16,50 @@ import net.minecraftforge.fluids.FluidStack;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * This class manages the registration and translation of fluids from the HBM mod
+ * into the Forge fluid system.
+ * <p>
+ * Given an instance of {@link com.hbm.inventory.fluid.FluidType} (an HBM-defined fluid),
+ * the class handles the registration of the corresponding {@link net.minecraftforge.fluids.Fluid}
+ * through the Forge API, automatically creating the associated block and bucket.
+ * </p>
+ *
+ * <p>
+ * The conversion (lookup) between HBM fluids and Forge fluids is based on a naming convention:
+ * <ul>
+ *   <li><b>HBM</b> uses the format: <code>"FLUID_NAME"</code> (uppercase, no suffix)</li>
+ *   <li><b>Forge</b> uses the format: <code>"fluid_name_fluid"</code> (lowercase, with a <code>_fluid</code> suffix)</li>
+ * </ul>
+ * Custom exceptions to this naming rule are handled through an internal lookup table.
+ *
+ */
 public class CustomFluidRegistry {
 
     private static final Set<String> blackList = new HashSet<String>();
 
+    // This look up table is used to match fluids that don't follow the naming convention
+    private static final HashBiMap<Fluid, FluidType> lookUpTable = HashBiMap.create();
+
     public CustomFluidRegistry() {
         blackList.add(Fluids.NONE.getName());
-        blackList.add(Fluids.LAVA.getName());
         blackList.add(Fluids.WATER.getName());
+        blackList.add(Fluids.LAVA.getName());
+        blackList.add(Fluids.WATZ.getName());
         blackList.add("CUSTOM_DEMO");
+
+        lookUpTable.put(FluidRegistry.getFluid("mud_fluid"), Fluids.WATZ);
+        lookUpTable.put(FluidRegistry.getFluid("water"), Fluids.WATER);
+        lookUpTable.put(FluidRegistry.getFluid("lava"), Fluids.LAVA);
     }
 
+    /**
+     * Given a {@link FluidType} from HBM, this method registers a corresponding Forge Fluid ({@link Fluid})
+     * @param fluidType HBM fluid
+     * @return Returns the fluid block associated to the ForgeFluid
+     */
     public CustomFluidBlock registerFluidType(FluidType fluidType) {
-        String name = fluidType.getName().toLowerCase();
+        String name = fluidType.getName().toLowerCase() + "_fluid";
         Fluid forgeFluid = new Fluid(name);
         FluidRegistry.registerFluid(forgeFluid);
 
@@ -53,7 +85,12 @@ public class CustomFluidRegistry {
      * @return returns null if there is no correspondence
      */
     public static FluidType getHBMFluid(Fluid fluid) {
-        return Fluids.fromName(fluid.getName().toUpperCase());
+        FluidType result = lookUpTable.get(fluid);
+        if (result != null) return result;
+
+        return Fluids.fromName(fluid.getName()
+                .replaceFirst("_fluid$", "") // remove "_fluid" at the end of the string
+                .toUpperCase());
     }
 
     /**
@@ -62,7 +99,9 @@ public class CustomFluidRegistry {
      * @return returns null if there is no correspondence (like for black-listed fluids)
      */
     public static Fluid getForgeFluid(FluidType fluidType) {
-        return FluidRegistry.getFluid(fluidType.getName().toLowerCase());
+        Fluid result = lookUpTable.inverse().get(fluidType);
+        if (result != null) return result;
+        return FluidRegistry.getFluid(fluidType.getName().toLowerCase() + "_fluid");
     }
 
     /**
