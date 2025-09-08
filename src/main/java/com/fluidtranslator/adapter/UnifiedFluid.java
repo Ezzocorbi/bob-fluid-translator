@@ -24,7 +24,6 @@ import net.minecraftforge.fluids.Fluid;
  */
 public class UnifiedFluid {
     private FluidType hbmFluid;
-    int amount;
 
     private UnifiedFluid(FluidType hbmFluid) {
         this.hbmFluid = hbmFluid;

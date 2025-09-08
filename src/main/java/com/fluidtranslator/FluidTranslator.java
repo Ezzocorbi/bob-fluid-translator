@@ -39,20 +39,13 @@ public class FluidTranslator
         }
 
         // Register blocks
-        GameRegistry.registerBlock(new BlockForgeFluidTank(), "simpleFluidTank");
-        GameRegistry.registerBlock(new BlockHBMWrapperFluidTank(), "hbmToForgeTank");
         GameRegistry.registerBlock(new BlockUniversalTank(), "universalTank");
         GameRegistry.registerBlock(new BlockHBMAdapter(), "hbmInterface");
 
         // Register tile entities
-        GameRegistry.registerTileEntity(TileEntityForgeFluidTank.class, "teSimpleFluidTank");
-        GameRegistry.registerTileEntity(TileEntityHBMWrapper.class, "teHBMWrapperTank");
         GameRegistry.registerTileEntity(TileEntityUniversalTank.class, "teUniversalTank");
         GameRegistry.registerTileEntity(TileEntityHBMAdapter.class, "teHBMInterface");
 
-        // HBM specific stuff
-        GameRegistry.registerBlock(new BlockHBMFluidTank(), "simpleHBMTank");
-        GameRegistry.registerTileEntity(TileEntityHBMFluidTank.class, "teSimpleHBMTank");
     }
 
     @EventHandler

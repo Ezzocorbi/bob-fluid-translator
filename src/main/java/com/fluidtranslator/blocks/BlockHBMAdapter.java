@@ -75,9 +75,9 @@ public class BlockHBMAdapter extends BlockContainer {
     @SideOnly(Side.CLIENT)
     @Override
     public void registerBlockIcons(IIconRegister reg) {
-        frontIcon = reg.registerIcon(FluidTranslator.MODID + ":adapter_face_front");  // front
-        backIcon = reg.registerIcon(FluidTranslator.MODID + ":adapter_face_back");   // back
-        sideIcon = reg.registerIcon(FluidTranslator.MODID + ":adapter_face_side"); // bottom
+        frontIcon = reg.registerIcon(FluidTranslator.MODID + ":adapter_face_front");
+        backIcon = reg.registerIcon(FluidTranslator.MODID + ":adapter_face_back");
+        sideIcon = reg.registerIcon(FluidTranslator.MODID + ":adapter_face_side");
     }
 
     @SideOnly(Side.CLIENT)
@@ -128,17 +128,6 @@ public class BlockHBMAdapter extends BlockContainer {
     public void onBlockPlacedBy(World world, int x, int y, int z,
                                 EntityLivingBase player, ItemStack stack) {
         int meta = determineOrientation(world, x, y, z, player);
-        System.out.println("Front face is facing: " + translateOrientation(meta));
         world.setBlockMetadataWithNotify(x, y, z, meta, 2);
-    }
-
-    private String translateOrientation (int meta) {
-        if (meta == 0) return "Down";
-        if (meta == 1) return "Up";
-        if (meta == 2) return "North";
-        if (meta == 3) return "South";
-        if (meta == 4) return "West";
-        if (meta == 5) return "East";
-        return "Invalid orientation";
     }
 }

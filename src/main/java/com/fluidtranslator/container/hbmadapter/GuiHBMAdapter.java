@@ -2,8 +2,6 @@ package com.fluidtranslator.container.hbmadapter;
 
 import com.fluidtranslator.CustomFluidRegistry;
 import com.fluidtranslator.FluidTranslator;
-import com.fluidtranslator.container.forgefluidtank.ContainerFluidTank;
-import com.fluidtranslator.tileentity.TileEntityForgeFluidTank;
 import com.fluidtranslator.tileentity.TileEntityHBMAdapter;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.gui.GuiInfoContainer;
