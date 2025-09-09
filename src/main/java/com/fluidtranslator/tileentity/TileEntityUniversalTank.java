@@ -33,12 +33,12 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
     protected FluidNode node;
     protected FluidType lastType = Fluids.NONE;
     public UnifiedFluidTank tank;
-    public short mode = 0;
+    public short mode = (short)TankModes.DISABLED.ordinal;
 
     public TileEntityUniversalTank() {
         super(1);
         slots = new ItemStack[2];
-        tank = new UnifiedFluidTank(4000);
+        tank = new UnifiedFluidTank(8000);
     }
 
     /// HBM-RELEVANT IMPLEMENTATION ///
@@ -83,7 +83,10 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
 
     public long transferFluid(FluidType type, int pressure, long amount) {
         long toTransfer = Math.min(getDemand(type, pressure), amount);
-        tank.setFill(tank.getFill() + (int) toTransfer);
+        if (toTransfer > 0) {
+            tank.setFill(tank.getFill() + (int) toTransfer);
+            this.markDirtyAndUpdate();
+        }
         return amount - toTransfer;
     }
 
@@ -107,6 +110,7 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
                     int toRem = Math.min(firstRound, tank.getFill());
                     tank.setFill(tank.getFill() - toRem);
                     amount -= toRem;
+                    this.markDirtyAndUpdate();
                 }
             }
         }
@@ -115,6 +119,7 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
                 int toRem = (int) Math.min(amount, tank.getFill());
                 tank.setFill(tank.getFill() - toRem);
                 amount -= toRem;
+                this.markDirtyAndUpdate();
             }
         }
     }
@@ -215,18 +220,19 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
     public Packet getDescriptionPacket() {
         NBTTagCompound nbtTag = new NBTTagCompound();
         this.writeToNBT(nbtTag);
-        System.out.println("Sending packet");
+//        System.out.println("Sending packet");
         return new S35PacketUpdateTileEntity(this.xCoord, this.yCoord, this.zCoord, 1, nbtTag);
     }
 
     @Override
     public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity pkt) {
-        System.out.println("Received packet");
+//        System.out.println("Received packet");
         this.readFromNBT(pkt.func_148857_g());
     }
 
     @Override
     public int fill(ForgeDirection from, FluidStack resource, boolean doFill) {
+        if (!canFill(from, resource.getFluid())) return 0;
         int filled = tank.fill(UnifiedFluidStack.fromForge(resource), doFill);
         if(filled > 0 && doFill) {
             this.markDirtyAndUpdate();
@@ -237,7 +243,7 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
     @Override
     public FluidStack drain(ForgeDirection from, FluidStack resource, boolean doDrain) {
         UnifiedFluidStack drained = tank.drain(resource.amount, doDrain);
-        if(drained != null && doDrain) {
+        if(drained != null && !drained.isEmpty() && doDrain) {
             this.markDirtyAndUpdate();
         }
         return drained.toForge();
@@ -246,7 +252,7 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
     @Override
     public FluidStack drain(ForgeDirection from, int maxDrain, boolean doDrain) {
         UnifiedFluidStack drained = tank.drain(maxDrain, doDrain);
-        if(drained != null && doDrain) {
+        if(drained != null && !drained.isEmpty()  && doDrain) {
             this.markDirtyAndUpdate();
         }
         return drained.toForge();
@@ -254,12 +260,19 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
 
     @Override
     public boolean canFill(ForgeDirection from, Fluid fluid) {
-        return true;
+        FluidType incomingFluid = CustomFluidRegistry.getHBMFluid(fluid);
+        FluidType storedFluid = tank.toHBM().getTankType();
+
+        if (incomingFluid == null) return false;
+        if (incomingFluid.getID() == Fluids.NONE.getID()) return false;
+        if (storedFluid.getID() == Fluids.NONE.getID()) return true;
+        if (storedFluid.getID() == incomingFluid.getID()) return true;
+        return false;
     }
 
     @Override
     public boolean canDrain(ForgeDirection from, Fluid fluid) {
-        return tank.toHBM().getTankType() == CustomFluidRegistry.getHBMFluid(fluid);
+        return tank.toHBM().getTankType().getID() == CustomFluidRegistry.getHBMFluid(fluid).getID();
     }
 
     @Override

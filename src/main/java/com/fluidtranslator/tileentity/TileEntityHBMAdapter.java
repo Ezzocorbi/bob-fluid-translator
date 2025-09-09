@@ -214,7 +214,9 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         FluidTank tank = fluidHandler.getAllTanks()[0];
         FluidType incomingFluid = CustomFluidRegistry.getHBMFluid(fluid);
         FluidType storedFluid = tank.getTankType();
+
         if (incomingFluid == null) return false;
+        if (incomingFluid.getID() == Fluids.NONE.getID()) return false;
         if (storedFluid.getID() == Fluids.NONE.getID()) return true;
         if (storedFluid.getID() == incomingFluid.getID()) return true;
         return false;

@@ -60,7 +60,7 @@ public class BlockUniversalTank extends BlockContainer {
                 } else {
                     player.openGui(FluidTranslator.instance, GuiIds.UNIVERSAL_TANK.ordinal, world, x, y, z);
                 }
-                player.addChatMessage(new ChatComponentText("Fill: " + tank.getFill() + ", fluid: " + tank.getTankType().getName()));
+//                player.addChatMessage(new ChatComponentText("Fill: " + tank.getFill() + ", fluid: " + tank.getTankType().getName())); // Debug message
             }
         }
         return true;

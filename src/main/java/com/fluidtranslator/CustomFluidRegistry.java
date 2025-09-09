@@ -36,6 +36,10 @@ import java.util.Set;
  */
 public class CustomFluidRegistry {
 
+    /** This list contains fluids that shouldn't get a translation.
+     * It's used by other classes to check if a fluid has a translation handled by
+     * this registry.
+     */
     private static final Set<String> blackList = new HashSet<String>();
 
     // This look up table is used to match fluids that don't follow the naming convention
