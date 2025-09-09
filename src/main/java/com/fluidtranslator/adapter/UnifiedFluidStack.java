@@ -77,6 +77,10 @@ public class UnifiedFluidStack {
         return new net.minecraftforge.fluids.FluidStack(CustomFluidRegistry.getForgeFluid(hbmFluidStack.type), hbmFluidStack.fill);
     }
 
+    public UnifiedFluid getFluid() {
+        return UnifiedFluid.fromHBM(this.hbmFluidStack.type);
+    }
+
     public int amount() {
         return hbmFluidStack.fill;
     }

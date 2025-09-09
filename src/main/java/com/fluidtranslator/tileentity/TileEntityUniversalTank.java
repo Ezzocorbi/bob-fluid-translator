@@ -4,6 +4,7 @@ import api.hbm.fluidmk2.FluidNode;
 import api.hbm.fluidmk2.IFluidStandardTransceiverMK2;
 import com.fluidtranslator.CustomFluidRegistry;
 import com.fluidtranslator.TankModes;
+import com.fluidtranslator.adapter.UnifiedFluid;
 import com.fluidtranslator.adapter.UnifiedFluidStack;
 import com.fluidtranslator.adapter.UnifiedFluidTank;
 import com.hbm.inventory.fluid.FluidType;
@@ -15,16 +16,14 @@ import com.hbm.uninos.UniNodespace;
 import com.hbm.util.fauxpointtwelve.BlockPos;
 import com.hbm.util.fauxpointtwelve.DirPos;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidTankInfo;
-import net.minecraftforge.fluids.IFluidHandler;
+import net.minecraftforge.fluids.*;
 
 import java.util.HashSet;
 
@@ -124,8 +123,21 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
         }
     }
 
-    @Override
-    public void updateEntity() {
+    protected DirPos[] getConPos() {
+        return new DirPos[] {
+                new DirPos(xCoord + 1, yCoord, zCoord, Library.POS_X),
+                new DirPos(xCoord - 1, yCoord, zCoord, Library.NEG_X),
+                new DirPos(xCoord, yCoord + 1, zCoord, Library.POS_Y),
+                new DirPos(xCoord, yCoord - 1, zCoord, Library.NEG_Y),
+                new DirPos(xCoord, yCoord, zCoord + 1, Library.POS_Z),
+                new DirPos(xCoord, yCoord, zCoord - 1, Library.NEG_Z)
+        };
+    }
+
+    /**
+     * This method handles the behavior of this node in a fluid network from HBM
+     */
+    private void handleHBMNode() {
         if(mode == TankModes.DISABLED.ordinal && this.node != null) {
             UniNodespace.destroyNode(worldObj, xCoord, yCoord, zCoord, tank.toHBM().getTankType().getNetworkProvider());
             this.node = null;
@@ -175,15 +187,21 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
         }
     }
 
-    protected DirPos[] getConPos() {
-        return new DirPos[] {
-                new DirPos(xCoord + 1, yCoord, zCoord, Library.POS_X),
-                new DirPos(xCoord - 1, yCoord, zCoord, Library.NEG_X),
-                new DirPos(xCoord, yCoord + 1, zCoord, Library.POS_Y),
-                new DirPos(xCoord, yCoord - 1, zCoord, Library.NEG_Y),
-                new DirPos(xCoord, yCoord, zCoord + 1, Library.POS_Z),
-                new DirPos(xCoord, yCoord, zCoord - 1, Library.NEG_Z)
-        };
+    @Override
+    public void updateEntity() {
+        handleHBMNode();
+
+        ItemStack stackIn = this.getStackInSlot(0);
+        ItemStack stackOut = this.getStackInSlot(1);
+
+        // Input slot must have an item and output slot must be empty
+        if (stackIn == null || stackOut != null) return;
+
+        if (FluidContainerRegistry.isBucket(stackIn)) {
+            handleBucket(stackIn);
+        } else if (stackIn.getItem() instanceof IFluidContainerItem) {
+            handleFluidContainer(stackIn);
+        }
     }
 
     protected FluidNode createNode(FluidType type) {
@@ -197,6 +215,83 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
         }
 
         return new FluidNode(type.getNetworkProvider(), posSet.toArray(new BlockPos[posSet.size()])).setConnections(conPos);
+    }
+
+    ///  FLUID HANDLING ///
+
+    private void handleBucket(ItemStack bucketIn) {
+        FluidStack fluidStack = FluidContainerRegistry.getFluidForFilledItem(bucketIn);
+
+        if (fluidStack != null) {
+            // Full bucket -> tank
+            if (!canFill(ForgeDirection.UP, fluidStack.getFluid())) return;
+            transferBucketToTank(bucketIn, fluidStack);
+        } else {
+            // Empty bucket <- tank
+            transferTankToBucket(bucketIn);
+        }
+    }
+
+    private void transferBucketToTank(ItemStack stackIn, FluidStack fluidStack) {
+        int filled = tank.fill(UnifiedFluidStack.fromForge(fluidStack), true);
+        if (filled > 0) {
+            this.setInventorySlotContents(0, null);
+            this.setInventorySlotContents(1, new ItemStack(Items.bucket));
+        }
+    }
+
+    private void transferTankToBucket(ItemStack stackIn) {
+        if (tank.getFill() < FluidContainerRegistry.BUCKET_VOLUME) return;
+
+        UnifiedFluidStack drained = tank.drain(FluidContainerRegistry.BUCKET_VOLUME, true);
+        if (drained == null || drained.amount() <= 0) return;
+
+        ItemStack filledBucket = FluidContainerRegistry.fillFluidContainer(drained.toForge(), stackIn);
+        if (filledBucket != null) {
+            this.setInventorySlotContents(0, null);
+            this.setInventorySlotContents(1, filledBucket);
+        }
+    }
+
+    private void handleFluidContainer(ItemStack containerIn) {
+        IFluidContainerItem container = (IFluidContainerItem) containerIn.getItem();
+        FluidStack containerFluid = container.getFluid(containerIn);
+
+        if (containerFluid.amount > tank.getFill()) {
+            // Full container -> to tank
+            if (!canFill(ForgeDirection.UP, containerFluid.getFluid())) return;
+            transferContainerToTank(containerIn, container, containerFluid);
+        } else {
+            // Empty container <- from tank
+            transferTankToContainer(containerIn, container);
+        }
+
+//        if (containerFluid != null) {
+//            // Full container -> to tank
+//            if (!canFill(ForgeDirection.UP, containerFluid.getFluid())) return;
+//            transferContainerToTank(containerIn, container, containerFluid);
+//        } else {
+//            // Empty container <- from tank
+//            transferTankToContainer(containerIn, container);
+//        }
+    }
+
+    private void transferContainerToTank(ItemStack stackIn, IFluidContainerItem container, FluidStack containerFluid) {
+        int filled = tank.fill(UnifiedFluidStack.fromForge(containerFluid), true);
+        if (filled > 0) {
+            container.drain(stackIn, filled, true);
+            this.setInventorySlotContents(0, null);
+            this.setInventorySlotContents(1, stackIn);
+        }
+    }
+
+    private void transferTankToContainer(ItemStack stackIn, IFluidContainerItem container) {
+        UnifiedFluidStack drained = tank.drain(container.getCapacity(stackIn), true);
+        if (drained != null && drained.amount() > 0) {
+            container.fill(stackIn, drained.toForge(), true);
+            this.setInventorySlotContents(0, null);
+            this.setInventorySlotContents(1, stackIn);
+        }
     }
 
     /// FORGE-RELEVANT IMPLEMENTATION ///
@@ -266,8 +361,7 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
         if (incomingFluid == null) return false;
         if (incomingFluid.getID() == Fluids.NONE.getID()) return false;
         if (storedFluid.getID() == Fluids.NONE.getID()) return true;
-        if (storedFluid.getID() == incomingFluid.getID()) return true;
-        return false;
+        return tank.setFluidSafe(UnifiedFluid.fromForge(fluid));
     }
 
     @Override
