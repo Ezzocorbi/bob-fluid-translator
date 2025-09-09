@@ -1,7 +1,6 @@
 package com.fluidtranslator.adapter;
 
 import com.fluidtranslator.CustomFluidRegistry;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTank;
 import net.minecraft.nbt.NBTTagCompound;
@@ -143,8 +142,27 @@ public class UnifiedFluidTank {
         return stackDrained;
     }
 
+    /**
+     * Changes fluid type of the tank and <b>resets fill to zero</b>
+     * @param fluid New fluid
+     */
     public void setFluid(UnifiedFluid fluid) {
         hbmTank.setTankType(fluid.toHBM());
+    }
+
+    /**
+     * Attempts to set the tank's fluid type <b>only if the tank is empty</b>.
+     *
+     * @param fluid The new fluid type
+     * @return {@code true} if the fluid type was successfully changed,
+     *         or if the tank already contains the same fluid type;
+     *         {@code false} if the tank is not empty and holds a different fluid.
+     */
+    public boolean setFluidSafe(UnifiedFluid fluid) {
+        if (this.toHBM().getTankType().getID() == fluid.toHBM().getID()) return true;
+        if (this.getFill() > 0) return false;
+        else hbmTank.setTankType(fluid.toHBM());
+        return true;
     }
 
     public NBTTagCompound writeToNBT() {
