@@ -10,6 +10,7 @@ import com.fluidtranslator.adapter.UnifiedFluidTank;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTank;
+import com.hbm.items.machine.ItemFluidTank;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.uninos.UniNodespace;
@@ -25,6 +26,7 @@ import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.*;
 
+import javax.annotation.Nullable;
 import java.util.HashSet;
 
 public class TileEntityUniversalTank extends TileEntityMachineBase implements IFluidStandardTransceiverMK2, IFluidHandler {
@@ -201,6 +203,9 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
             handleBucket(stackIn);
         } else if (stackIn.getItem() instanceof IFluidContainerItem) {
             handleFluidContainer(stackIn);
+        } else if (stackIn.getItem() instanceof ItemFluidTank) {
+//            handleFluidTank(stackIn);
+            System.out.println("fluid tank");
         }
     }
 
@@ -257,23 +262,25 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
         IFluidContainerItem container = (IFluidContainerItem) containerIn.getItem();
         FluidStack containerFluid = container.getFluid(containerIn);
 
-        if (containerFluid.amount > tank.getFill()) {
-            // Full container -> to tank
+        if (containerFluid == null) {
+            transferTankToContainer(containerIn, container, containerFluid);
+            return;
+        }
+        if (tank.getFill() <= 0) { // tank is empty: fill the tank
             if (!canFill(ForgeDirection.UP, containerFluid.getFluid())) return;
             transferContainerToTank(containerIn, container, containerFluid);
-        } else {
-            // Empty container <- from tank
-            transferTankToContainer(containerIn, container);
+        } else if (tank.getFill() < tank.getCapacity()) { // tank has some fluid
+            if (container.getCapacity(containerIn) == containerFluid.amount) { // container is full: fill tank
+                if (!canFill(ForgeDirection.UP, containerFluid.getFluid())) return;
+                transferContainerToTank(containerIn, container, containerFluid);
+            } else { // fill container
+                if (!canDrain(ForgeDirection.UP, containerFluid.getFluid())) return;
+                transferTankToContainer(containerIn, container, containerFluid);
+            }
+        } else { // tank is full: fill container
+            if (!canDrain(ForgeDirection.UP, containerFluid.getFluid())) return;
+            transferTankToContainer(containerIn, container, containerFluid);
         }
-
-//        if (containerFluid != null) {
-//            // Full container -> to tank
-//            if (!canFill(ForgeDirection.UP, containerFluid.getFluid())) return;
-//            transferContainerToTank(containerIn, container, containerFluid);
-//        } else {
-//            // Empty container <- from tank
-//            transferTankToContainer(containerIn, container);
-//        }
     }
 
     private void transferContainerToTank(ItemStack stackIn, IFluidContainerItem container, FluidStack containerFluid) {
@@ -285,13 +292,34 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
         }
     }
 
-    private void transferTankToContainer(ItemStack stackIn, IFluidContainerItem container) {
-        UnifiedFluidStack drained = tank.drain(container.getCapacity(stackIn), true);
-        if (drained != null && drained.amount() > 0) {
-            container.fill(stackIn, drained.toForge(), true);
+    private void transferTankToContainer(ItemStack stackIn, IFluidContainerItem container, @Nullable FluidStack containerFluid) {
+        int space = containerFluid == null
+                ? container.getCapacity(stackIn)
+                : container.getCapacity(stackIn) - containerFluid.amount;
+
+        if (space <= 0 || tank.getFill() <= 0) {
+            return;
+        }
+
+        int toTransfer = Math.min(tank.getFill(), space);
+        UnifiedFluidStack drained = tank.drain(toTransfer, true);
+        if (drained == null || drained.amount() <= 0) {
+            return;
+        }
+
+        int accepted = container.fill(stackIn, drained.toForge(), true);
+        if (accepted > 0) {
             this.setInventorySlotContents(0, null);
             this.setInventorySlotContents(1, stackIn);
         }
+    }
+
+
+    // Handle fluid tanks from HBM
+    private void handleFluidTank(ItemStack tankIn) {
+        ItemStack full = com.hbm.inventory.FluidContainerRegistry.getFullContainer(tankIn, tank.toHBM().getTankType());
+        int fill = com.hbm.inventory.FluidContainerRegistry.getFluidContent(full, tank.toHBM().getTankType());
+        System.out.println(full.getItem().getUnlocalizedName() + " fill: " + fill);
     }
 
     /// FORGE-RELEVANT IMPLEMENTATION ///
@@ -366,6 +394,7 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
 
     @Override
     public boolean canDrain(ForgeDirection from, Fluid fluid) {
+        if (fluid == null) return false;
         return tank.toHBM().getTankType().getID() == CustomFluidRegistry.getHBMFluid(fluid).getID();
     }
 
