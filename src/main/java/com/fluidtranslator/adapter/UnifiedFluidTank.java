@@ -132,7 +132,7 @@ public class UnifiedFluidTank {
             drained = getFill();
         }
 
-        UnifiedFluidStack stack = UnifiedFluidStack.fromHBM(hbmTank.getTankType(), drained);
+        UnifiedFluidStack stackDrained = UnifiedFluidStack.fromHBM(hbmTank.getTankType(), drained);
         if (doDrain)
         {
             setFill(getFill() - drained);
@@ -140,7 +140,7 @@ public class UnifiedFluidTank {
                 setFill(0);
             }
         }
-        return stack;
+        return stackDrained;
     }
 
     public void setFluid(UnifiedFluid fluid) {

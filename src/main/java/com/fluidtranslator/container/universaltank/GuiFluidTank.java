@@ -34,7 +34,6 @@ public class GuiFluidTank extends GuiInfoContainer {
         int color = 4210752;
         int x = 8;
         int y = 6;
-        this.fontRendererObj.drawString("Fluid Tank", x, y, color);
     }
 
     @Override
