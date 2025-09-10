@@ -22,6 +22,7 @@ import org.lwjgl.opengl.GL11;
 public class GuiFluidTank extends GuiInfoContainer {
     private static final ResourceLocation texture = new ResourceLocation(FluidTranslator.MODID + ":textures/gui/fluid_tank.png");
     private static final ResourceLocation barrelTexture = new ResourceLocation(RefStrings.MODID + ":textures/gui/storage/gui_barrel.png");
+
     private final TileEntityUniversalTank tank;
     private final int xLeftPixel = 74; // left pixel where the tank starts
     private final int yTopPixel = 8; // top pixel where the tank starts

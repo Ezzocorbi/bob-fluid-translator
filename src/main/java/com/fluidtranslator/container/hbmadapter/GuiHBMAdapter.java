@@ -2,6 +2,7 @@ package com.fluidtranslator.container.hbmadapter;
 
 import com.fluidtranslator.FluidTranslator;
 import com.fluidtranslator.ModFluidRegistry;
+import com.fluidtranslator.network.MessageResetTank;
 import com.fluidtranslator.network.MessageSetTankIndex;
 import com.fluidtranslator.network.ModNetwork;
 import com.fluidtranslator.tileentity.TileEntityHBMAdapter;
@@ -11,15 +12,22 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
+import org.lwjgl.opengl.GL11;
 
 public class GuiHBMAdapter extends GuiInfoContainer {
     private static final ResourceLocation texture = new ResourceLocation(FluidTranslator.MODID + ":textures/gui/fluid_adapter.png");
     private static final ResourceLocation buttons = new ResourceLocation("minecraft:textures/gui/container/villager.png");
+
     private final TileEntityHBMAdapter tank;
     private final int xLeftPixel = 74; // left pixel where the tank starts
     private final int yTopPixel = 8; // top pixel where the tank starts
@@ -37,7 +45,7 @@ public class GuiHBMAdapter extends GuiInfoContainer {
         super.mouseClicked(x, y, i);
 
         // Left button click action
-        if(x < guiLeft + 62 + 8 && x >= guiLeft + 62 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
+        if (x < guiLeft + 62 + 8 && x >= guiLeft + 62 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
             mc.getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
             int len = tank.getAllTanks().length;
             int newIndex = (tank.getTankIndex() - 1 + len) % len;
@@ -47,12 +55,19 @@ public class GuiHBMAdapter extends GuiInfoContainer {
         }
 
         // Right button click action
-        if(x < guiLeft + 105 + 8 && x >= guiLeft + 105 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
+        if (x < guiLeft + 105 + 8 && x >= guiLeft + 105 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
             mc.getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
             int len = tank.getAllTanks().length;
             int newIndex = (tank.getTankIndex() + 1) % len;
             tank.setTankIndex(newIndex);
             ModNetwork.INSTANCE.sendToServer(new MessageSetTankIndex(tank.xCoord, tank.yCoord, tank.zCoord, newIndex));
+            return;
+        }
+
+        if (x < guiLeft + 154 + 16 && x >= guiLeft + 154 && y <= guiTop + 35 + 16 && y > guiTop + 35) {
+            mc.getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
+            boolean resetTank = !tank.doesResetFluidType();
+            ModNetwork.INSTANCE.sendToServer(new MessageResetTank(tank.xCoord, tank.yCoord, tank.zCoord, resetTank));
             return;
         }
     }
@@ -61,7 +76,7 @@ public class GuiHBMAdapter extends GuiInfoContainer {
     protected void drawGuiContainerForegroundLayer(int x, int y) {
 
         // Left button tooltip
-        if(x < guiLeft + 62 + 8 && x >= guiLeft + 62 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
+        if (x < guiLeft + 62 + 8 && x >= guiLeft + 62 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
             mc.getTextureManager().bindTexture(buttons);
             drawTexturedModalRect(62, 37, 190, 22, 8, 13);
             this.drawInfo(new String[] {"Cycle tanks"}, x + 2 - guiLeft, y + 1 - guiTop);
@@ -69,11 +84,39 @@ public class GuiHBMAdapter extends GuiInfoContainer {
         }
 
         // Right button tooltip
-        if(x < guiLeft + 105 + 8 && x >= guiLeft + 105 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
+        if (x < guiLeft + 105 + 8 && x >= guiLeft + 105 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
             mc.getTextureManager().bindTexture(buttons);
             drawTexturedModalRect(105, 37, 190, 3, 8, 13);
             this.drawInfo(new String[] {"Cycle tanks"}, x + 2 - guiLeft, y + 1 - guiTop);
             return;
+        }
+
+        // Reset fluid-type button tooltip
+        if (x < guiLeft + 150 + 16 && x >= guiLeft + 150 && y <= guiTop + 35 + 16 && y > guiTop + 35) {
+            String[] info;
+            String formatting = EnumChatFormatting.GRAY + "" + EnumChatFormatting.ITALIC;
+            if (tank.doesResetFluidType()) {
+                info = new String[] {"Reset tank's fluid ID on empty",
+                        formatting + "Tank will forget its fluid ID when emptied",
+                        formatting + "Useful for automation through this adapter"};
+            } else {
+                info = new String[] {"Don't reset tank's fluid ID on empty",
+                        formatting + "Tank will keep its fluid ID when emptied",
+                        formatting + "This adapter won't insert a different fluid"};
+            }
+
+            GL11.glPushMatrix();
+            GL11.glScalef(0.75F, 0.75F, 0.75F);
+            this.drawInfo(info, x - guiLeft, y + 42 - guiTop);
+            GL11.glPopMatrix();
+        }
+
+        // Reset fluid-type button icon
+        if (tank.doesResetFluidType()) {
+            drawItem(Items.bucket, 150, 35);
+            return;
+        } else {
+            drawItem(Items.water_bucket, 150, 35);
         }
     }
 
@@ -158,5 +201,24 @@ public class GuiHBMAdapter extends GuiInfoContainer {
         tessellator.addVertexWithUV(maxX, minY, this.zLevel, maxU, minV);
         tessellator.addVertexWithUV(minX, minY, this.zLevel, minU, minV);
         tessellator.draw();
+    }
+
+    @SideOnly(Side.CLIENT)
+    private void drawItem(Item item, int x, int y) {
+        mc.getTextureManager().bindTexture(TextureMap.locationItemsTexture);
+        IIcon icon = item.getIconFromDamage(0);
+
+        float minU = icon.getMinU();
+        float maxU = icon.getMaxU();
+        float minV = icon.getMinV();
+        float maxV = icon.getMaxV();
+
+        Tessellator t = Tessellator.instance;
+        t.startDrawingQuads();
+        t.addVertexWithUV(x, y + 16, zLevel, minU, maxV);
+        t.addVertexWithUV(x + 16, y + 16, zLevel, maxU, maxV);
+        t.addVertexWithUV(x + 16,y, zLevel, maxU, minV);
+        t.addVertexWithUV(x, y, zLevel, minU, minV);
+        t.draw();
     }
 }
