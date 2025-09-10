@@ -1,5 +1,6 @@
 package com.fluidtranslator.item;
 
+import com.fluidtranslator.CustomFluid;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
@@ -11,18 +12,19 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidContainerRegistry;
 
 import java.util.HashMap;
 
 public class GenericBucket extends ItemBucket {
 
-    private Fluid fluid;
-    private static HashMap<Fluid, GenericBucket> fluidToBucket = new HashMap<Fluid, GenericBucket>();
+    private CustomFluid fluid;
+    private static final HashMap<Fluid, GenericBucket> fluidToBucket = new HashMap<Fluid, GenericBucket>();
 
     @SideOnly(Side.CLIENT)
     private IIcon icon;
 
-    public GenericBucket(Fluid fluid, Block block) {
+    public GenericBucket(CustomFluid fluid, Block block) {
         super(block);
         this.setUnlocalizedName(fluid.getName() + "bucket");
         this.setContainerItem(Items.bucket);
@@ -44,12 +46,10 @@ public class GenericBucket extends ItemBucket {
         return false;
     }
 
-//    @Override
-//    @SideOnly(Side.CLIENT)
-//    public void registerIcons(IIconRegister iconRegister) {
-//        this.baseIcon = iconRegister.registerIcon("minecraft:bucket_empty");
-//
-//    }
+    @Override
+    public String getItemStackDisplayName(ItemStack stack) {
+        return fluid.getLocalizedName(FluidContainerRegistry.getFluidForFilledItem(stack)) + " Bucket";
+    }
 
     @Override
     public IIcon getIcon(ItemStack stack, int pass) {
