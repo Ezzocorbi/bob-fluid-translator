@@ -50,17 +50,7 @@ public class BlockUniversalTank extends BlockContainer {
         if(!world.isRemote) {
             TileEntity te = world.getTileEntity(x, y, z);
             if (te instanceof TileEntityUniversalTank) {
-                TileEntityUniversalTank teTank = (TileEntityUniversalTank) te;
-                FluidTank tank = teTank.getAllTanks()[0];
-                ItemStack heldItem = player.getHeldItem();
-                if (heldItem != null && heldItem.getItem() instanceof IItemFluidIdentifier) { // Set fluid ID if players right clicks with fluid ID
-                    FluidType type = ((IItemFluidIdentifier) player.getHeldItem().getItem()).getType(world, x, y, z, player.getHeldItem());
-                    tank.setTankType(type);
-                    player.addChatMessage(new ChatComponentText("Set fluid type to " + type.getName()));
-                } else {
-                    player.openGui(FluidTranslator.instance, GuiIds.UNIVERSAL_TANK.ordinal, world, x, y, z);
-                }
-//                player.addChatMessage(new ChatComponentText("Fill: " + tank.getFill() + ", fluid: " + tank.getTankType().getName())); // Debug message
+                player.openGui(FluidTranslator.instance, GuiIds.UNIVERSAL_TANK.ordinal, world, x, y, z);
             }
         }
         return true;
