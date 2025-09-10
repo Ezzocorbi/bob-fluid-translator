@@ -47,11 +47,6 @@ public class GuiFluidTank extends GuiInfoContainer {
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        int color = 4210752;
-        int x = 8;
-        int y = 6;
-//        this.fontRendererObj.drawString("wait for: " + tank.operationDelay, x, y, color);
-
         mc.getTextureManager().bindTexture(barrelTexture);
         int u = 176;
         int v = tank.getTankMode() * 18;

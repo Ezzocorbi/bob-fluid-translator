@@ -28,6 +28,7 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
 
     private ForgeDirection targetDirection; // Direction where the fluid transceiver is located
     private IFluidStandardTransceiverMK2 fluidHandler;
+    private int tankIndex = 0;
     private final ItemStack[] inventoryStacks = new ItemStack[2];
     private boolean initialized = false;
 
@@ -35,9 +36,19 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
 
     }
 
+    public void setTankIndex(int index) {
+        this.tankIndex = index;
+        markDirtyAndUpdate();
+    }
+
+    public int getTankIndex() {
+        return this.tankIndex;
+    }
+
     @Override
     public void writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
+        tag.setInteger("tankIndex", tankIndex);
         if (targetDirection != null) {
             tag.setInteger("fluidHandlerDirection", targetDirection.ordinal());
         }
@@ -46,6 +57,9 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
+        if (tag.hasKey("tankIndex")) {
+            tankIndex = tag.getInteger("tankIndex");
+        }
         if (tag.hasKey("fluidHandlerDirection")) {
             targetDirection = ForgeDirection.getOrientation(tag.getInteger("fluidHandlerDirection"));
         }
@@ -130,7 +144,7 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
                 IFluidStandardTransceiverMK2 transceiver = (IFluidStandardTransceiverMK2) coreTile;
 
                 // Verify if the multiblock can connect fluids at this position
-                FluidType fluid = transceiver.getAllTanks()[0].getTankType();
+                FluidType fluid = transceiver.getAllTanks()[tankIndex].getTankType();
                 boolean canConnect = Library.canConnectFluid(
                         worldObj, neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), direction, fluid
                 );
@@ -154,13 +168,21 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         this.setTargetDirection(direction);
     }
 
+    /**
+     *
+     * @return Returns all tanks of the connected machine. Returns {@code null} if there is no machine connected.
+     */
+    public FluidTank[] getAllTanks() {
+        if (fluidHandler == null) return null;
+        else return fluidHandler.getAllTanks();
+    }
 
     @Override
     public int fill(ForgeDirection from, FluidStack resource, boolean doFill) {
         if (resource == null) return 0;
 
         if (fluidHandler == null) return 0;
-        FluidTank tank = fluidHandler.getAllTanks()[0];
+        FluidTank tank = fluidHandler.getAllTanks()[tankIndex];
 
         // Look for corresponding fluid type from HBM
         FluidType type = ModFluidRegistry.getHBMFluid(resource.getFluid());
@@ -182,7 +204,7 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     public FluidStack drain(ForgeDirection from, FluidStack resource, boolean doDrain) {
         if (resource == null || resource.getFluid() == null) return null;
         if (fluidHandler == null) return null;
-        FluidTank tank = fluidHandler.getAllTanks()[0];
+        FluidTank tank = fluidHandler.getAllTanks()[tankIndex];
         if (tank.getTankType() != ModFluidRegistry.getHBMFluid(resource.getFluid())) return null;
         return drain(from, resource.amount, doDrain);
 
@@ -191,7 +213,7 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     @Override
     public FluidStack drain(ForgeDirection from, int maxDrain, boolean doDrain) {
         if (fluidHandler == null) return null;
-        FluidTank tank = fluidHandler.getAllTanks()[0];
+        FluidTank tank = fluidHandler.getAllTanks()[tankIndex];
         if (tank.getFill() <= 0) return null;
 
         int drained = Math.min(maxDrain, tank.getFill());
@@ -210,7 +232,7 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     @Override
     public boolean canFill(ForgeDirection from, Fluid fluid) {
         if (fluidHandler == null) return false;
-        FluidTank tank = fluidHandler.getAllTanks()[0];
+        FluidTank tank = fluidHandler.getAllTanks()[tankIndex];
         FluidType incomingFluid = ModFluidRegistry.getHBMFluid(fluid);
         FluidType storedFluid = tank.getTankType();
 
@@ -224,14 +246,14 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     @Override
     public boolean canDrain(ForgeDirection from, Fluid fluid) {
         if (fluidHandler == null) return false;
-        FluidTank tank = fluidHandler.getAllTanks()[0];
+        FluidTank tank = fluidHandler.getAllTanks()[tankIndex];
         return tank.getTankType().getID() == ModFluidRegistry.getHBMFluid(fluid).getID();
     }
 
     @Override
     public FluidTankInfo[] getTankInfo(ForgeDirection from) {
         if (fluidHandler == null) return null;
-        FluidTank tank = fluidHandler.getAllTanks()[0];
+        FluidTank tank = fluidHandler.getAllTanks()[tankIndex];
         UnifiedFluidStack fluidStack = UnifiedFluidStack.fromHBM(tank.getTankType(), tank.getFill());
         if (fluidStack.isEmpty()) {
             return new FluidTankInfo[]{ new FluidTankInfo(null, tank.getMaxFill()) };

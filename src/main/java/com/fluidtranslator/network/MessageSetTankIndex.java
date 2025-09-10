@@ -1,5 +1,6 @@
 package com.fluidtranslator.network;
 
+import com.fluidtranslator.tileentity.TileEntityHBMAdapter;
 import com.fluidtranslator.tileentity.TileEntityUniversalTank;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
@@ -8,17 +9,17 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
 
-public class MessageSetOperationMode implements IMessage {
+public class MessageSetTankIndex implements IMessage {
     private int x, y, z;
-    private short mode;
+    private int index;
 
-    public MessageSetOperationMode() {}
+    public MessageSetTankIndex() { }
 
-    public MessageSetOperationMode(int x, int y, int z, short mode) {
+    public MessageSetTankIndex(int x, int y, int z, int index) {
         this.x = x;
         this.y = y;
         this.z = z;
-        this.mode = mode;
+        this.index = index;
     }
 
     @Override
@@ -26,7 +27,7 @@ public class MessageSetOperationMode implements IMessage {
         x = buf.readInt();
         y = buf.readInt();
         z = buf.readInt();
-        mode = buf.readShort();
+        index = buf.readInt();
     }
 
     @Override
@@ -34,20 +35,18 @@ public class MessageSetOperationMode implements IMessage {
         buf.writeInt(x);
         buf.writeInt(y);
         buf.writeInt(z);
-        buf.writeShort(mode);
+        buf.writeInt(index);
     }
 
-    public static class Handler implements IMessageHandler<MessageSetOperationMode, IMessage> {
+    public static class Handler implements IMessageHandler<MessageSetTankIndex, IMessage> {
         @Override
-        public IMessage onMessage(MessageSetOperationMode message, MessageContext ctx) {
+        public IMessage onMessage(MessageSetTankIndex message, MessageContext ctx) {
             EntityPlayerMP player = ctx.getServerHandler().playerEntity;
             TileEntity te = player.worldObj.getTileEntity(message.x, message.y, message.z);
-            if (te instanceof TileEntityUniversalTank) {
-                ((TileEntityUniversalTank) te).setTankMode(message.mode);
+            if (te instanceof TileEntityHBMAdapter) {
+                ((TileEntityHBMAdapter) te).setTankIndex(message.index);
             }
             return null;
         }
     }
 }
-
-

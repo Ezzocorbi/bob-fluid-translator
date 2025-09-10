@@ -10,5 +10,6 @@ public class ModNetwork {
 
     public static void init() {
         INSTANCE.registerMessage(MessageSetOperationMode.Handler.class, MessageSetOperationMode.class, 0, Side.SERVER);
+        INSTANCE.registerMessage(MessageSetTankIndex.Handler.class, MessageSetTankIndex.class, 1, Side.SERVER);
     }
 }
