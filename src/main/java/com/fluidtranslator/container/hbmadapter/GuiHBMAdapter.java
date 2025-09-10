@@ -1,8 +1,7 @@
 package com.fluidtranslator.container.hbmadapter;
 
-import com.fluidtranslator.ModFluidRegistry;
 import com.fluidtranslator.FluidTranslator;
-import com.fluidtranslator.network.MessageSetOperationMode;
+import com.fluidtranslator.ModFluidRegistry;
 import com.fluidtranslator.network.MessageSetTankIndex;
 import com.fluidtranslator.network.ModNetwork;
 import com.fluidtranslator.tileentity.TileEntityHBMAdapter;
@@ -37,6 +36,7 @@ public class GuiHBMAdapter extends GuiInfoContainer {
     protected void mouseClicked(int x, int y, int i) {
         super.mouseClicked(x, y, i);
 
+        // Left button click action
         if(x < guiLeft + 62 + 8 && x >= guiLeft + 62 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
             mc.getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
             int len = tank.getAllTanks().length;
@@ -46,6 +46,7 @@ public class GuiHBMAdapter extends GuiInfoContainer {
             return;
         }
 
+        // Right button click action
         if(x < guiLeft + 105 + 8 && x >= guiLeft + 105 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
             mc.getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
             int len = tank.getAllTanks().length;
@@ -58,17 +59,20 @@ public class GuiHBMAdapter extends GuiInfoContainer {
 
     @Override
     protected void drawGuiContainerForegroundLayer(int x, int y) {
+
+        // Left button tooltip
         if(x < guiLeft + 62 + 8 && x >= guiLeft + 62 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
             mc.getTextureManager().bindTexture(buttons);
             drawTexturedModalRect(62, 37, 190, 22, 8, 13);
-            this.drawInfo(new String[] {"Cycle tank"}, x + 2 - guiLeft, y + 1 - guiTop);
+            this.drawInfo(new String[] {"Cycle tanks"}, x + 2 - guiLeft, y + 1 - guiTop);
             return;
         }
 
+        // Right button tooltip
         if(x < guiLeft + 105 + 8 && x >= guiLeft + 105 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
             mc.getTextureManager().bindTexture(buttons);
             drawTexturedModalRect(105, 37, 190, 3, 8, 13);
-            this.drawInfo(new String[] {"Cycle tank"}, x + 2 - guiLeft, y + 1 - guiTop);
+            this.drawInfo(new String[] {"Cycle tanks"}, x + 2 - guiLeft, y + 1 - guiTop);
             return;
         }
     }
@@ -78,6 +82,7 @@ public class GuiHBMAdapter extends GuiInfoContainer {
         mc.getTextureManager().bindTexture(texture);
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 
+        // Draw buttons to change selected tank
         mc.getTextureManager().bindTexture(buttons);
         drawTexturedModalRect(guiLeft + 62, guiTop + 37, 178, 22, 8, 13);
         drawTexturedModalRect(guiLeft + 105, guiTop + 37, 178, 3, 8, 13);

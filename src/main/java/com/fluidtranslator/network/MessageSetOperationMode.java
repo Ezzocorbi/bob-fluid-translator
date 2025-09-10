@@ -8,6 +8,19 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
 
+/**
+ * Network message sent from the client to the server to request a change
+ * in the operation mode of a {@link com.fluidtranslator.tileentity.TileEntityUniversalTank}.
+ * <p>
+ * This message is typically triggered when the player clicks the mode button
+ * inside the tank's GUI. It carries the tank's coordinates in the world
+ * (x, y, z) and the new mode to be applied.
+ * <p>
+ * The server receives this message and updates the tank's state accordingly.
+ * The {@link Handler} inner class handles this logic on the server side.
+ *
+ * <p>
+ */
 public class MessageSetOperationMode implements IMessage {
     private int x, y, z;
     private short mode;
@@ -49,5 +62,4 @@ public class MessageSetOperationMode implements IMessage {
         }
     }
 }
-
 
