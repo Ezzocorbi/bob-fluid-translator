@@ -36,10 +36,15 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
     public UnifiedFluidTank tank;
     public short mode = (short)TankModes.DISABLED.ordinal;
 
+    // Use default capacity of 8000 mb
     public TileEntityUniversalTank() {
+        this(32000);
+    }
+
+    public TileEntityUniversalTank(int capacity) {
         super(1);
         slots = new ItemStack[2];
-        tank = new UnifiedFluidTank(8000);
+        tank = new UnifiedFluidTank(capacity);
     }
 
     /// HBM-RELEVANT IMPLEMENTATION ///
@@ -204,8 +209,9 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
         } else if (stackIn.getItem() instanceof IFluidContainerItem) {
             handleFluidContainer(stackIn);
         } else if (stackIn.getItem() instanceof ItemFluidTank) {
-//            handleFluidTank(stackIn);
-            System.out.println("fluid tank");
+            handleFullHBMTank(stackIn);
+        } else if (com.hbm.inventory.FluidContainerRegistry.getFullContainer(stackIn, tank.toHBM().getTankType()) != null) {
+            handleEmptyHBMTank(stackIn);
         }
     }
 
@@ -314,12 +320,44 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
         }
     }
 
+    // Transfer from HBM portable tank to universal tank
+    private void handleFullHBMTank(ItemStack tankIn) {
+        FluidType storedFluid = Fluids.fromID(tankIn.getItemDamage());
+        int fluidAmount = com.hbm.inventory.FluidContainerRegistry.getFluidContent(tankIn, storedFluid);
+        UnifiedFluidStack stackToTransfer = UnifiedFluidStack.fromHBM(storedFluid, fluidAmount);
 
-    // Handle fluid tanks from HBM
-    private void handleFluidTank(ItemStack tankIn) {
-        ItemStack full = com.hbm.inventory.FluidContainerRegistry.getFullContainer(tankIn, tank.toHBM().getTankType());
-        int fill = com.hbm.inventory.FluidContainerRegistry.getFluidContent(full, tank.toHBM().getTankType());
-        System.out.println(full.getItem().getUnlocalizedName() + " fill: " + fill);
+        if (!canFill(ForgeDirection.UP, stackToTransfer.toForge().getFluid())) return;
+        transferHBMContainerToTank(tankIn, stackToTransfer);
+    }
+
+    private void transferHBMContainerToTank(ItemStack tankIn, UnifiedFluidStack toTransfer) {
+        if (toTransfer.amount() > tank.getCapacity() - tank.getFill()) return;
+        int filled = tank.fill(toTransfer, true);
+        if (filled > 0) {
+            this.setInventorySlotContents(0, null);
+            ItemStack emptyContainer = com.hbm.inventory.FluidContainerRegistry.getEmptyContainer(tankIn);
+            this.setInventorySlotContents(1, emptyContainer);
+        }
+    }
+
+    // Transfer from universal tank to HBM portable tank
+    private void handleEmptyHBMTank(ItemStack tankIn) {
+        ItemStack fullContainer = com.hbm.inventory.FluidContainerRegistry.getFullContainer(tankIn, tank.toHBM().getTankType());
+        int toTransfer = com.hbm.inventory.FluidContainerRegistry.getFluidContent(fullContainer, tank.toHBM().getTankType());
+        FluidType storedFluid = Fluids.fromID(fullContainer.getItemDamage());
+        UnifiedFluidStack stackToTransfer = UnifiedFluidStack.fromHBM(storedFluid, toTransfer);
+
+        if (!canDrain(ForgeDirection.UP, stackToTransfer.toForge().getFluid())) return;
+        transferTankToHBMContainer(fullContainer, stackToTransfer);
+    }
+
+    private void transferTankToHBMContainer(ItemStack tankIn, UnifiedFluidStack toTransfer) {
+        if (toTransfer.amount() > tank.getFill()) return;
+        UnifiedFluidStack drained = tank.drain(toTransfer.amount(), true);
+        if (drained != null && drained.amount() > 0) {
+            this.setInventorySlotContents(0, null);
+            this.setInventorySlotContents(1, tankIn);
+        }
     }
 
     /// FORGE-RELEVANT IMPLEMENTATION ///
