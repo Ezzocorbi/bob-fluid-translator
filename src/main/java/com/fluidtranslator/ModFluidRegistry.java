@@ -34,7 +34,7 @@ import java.util.Set;
  * Custom exceptions to this naming rule are handled through an internal lookup table.
  *
  */
-public class CustomFluidRegistry {
+public class ModFluidRegistry {
 
     /** This list contains fluids that shouldn't get a translation.
      * It's used by other classes to check if a fluid has a translation handled by
@@ -45,7 +45,7 @@ public class CustomFluidRegistry {
     // This look up table is used to match fluids that don't follow the naming convention
     private static final HashBiMap<Fluid, FluidType> lookUpTable = HashBiMap.create();
 
-    public CustomFluidRegistry() {
+    public ModFluidRegistry() {
         blackList.add(Fluids.NONE.getName());
         blackList.add(Fluids.WATER.getName());
         blackList.add(Fluids.LAVA.getName());

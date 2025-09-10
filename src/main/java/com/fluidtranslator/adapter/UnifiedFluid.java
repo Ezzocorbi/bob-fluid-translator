@@ -1,6 +1,6 @@
 package com.fluidtranslator.adapter;
 
-import com.fluidtranslator.CustomFluidRegistry;
+import com.fluidtranslator.ModFluidRegistry;
 import com.hbm.inventory.fluid.FluidType;
 import net.minecraftforge.fluids.Fluid;
 
@@ -16,7 +16,7 @@ import net.minecraftforge.fluids.Fluid;
  * of the underlying system.
  *
  * Internally, it stores the HBM {@link FluidType} as the "source of truth",
- * while the Forge counterpart is retrieved from {@link CustomFluidRegistry}
+ * while the Forge counterpart is retrieved from {@link ModFluidRegistry}
  * only when needed.
  *
  * The {@code amount} field represents the fluid volume, shared between
@@ -30,7 +30,7 @@ public class UnifiedFluid {
     }
 
     public static UnifiedFluid fromForge(Fluid forgeFluid) {
-        return new UnifiedFluid(CustomFluidRegistry.getHBMFluid(forgeFluid));
+        return new UnifiedFluid(ModFluidRegistry.getHBMFluid(forgeFluid));
     }
 
     public static UnifiedFluid fromHBM(FluidType hbmFluid) {
@@ -42,6 +42,6 @@ public class UnifiedFluid {
     }
 
     public Fluid toForge() {
-        return CustomFluidRegistry.getForgeFluid(hbmFluid);
+        return ModFluidRegistry.getForgeFluid(hbmFluid);
     }
 }

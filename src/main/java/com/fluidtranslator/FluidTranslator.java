@@ -2,6 +2,7 @@ package com.fluidtranslator;
 
 import com.fluidtranslator.blocks.*;
 import com.fluidtranslator.container.GuiHandler;
+import com.fluidtranslator.network.ModNetwork;
 import com.fluidtranslator.proxy.CommonProxy;
 import com.fluidtranslator.tileentity.*;
 import com.hbm.inventory.fluid.FluidType;
@@ -32,10 +33,13 @@ public class FluidTranslator
     @EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
+        // Init network wrapper
+        ModNetwork.init();
+
         // Register HBM's fluids
-        CustomFluidRegistry ft = new CustomFluidRegistry();
+        ModFluidRegistry ft = new ModFluidRegistry();
         for(FluidType f : Fluids.getAll()) {
-            if (CustomFluidRegistry.isBlackListed(f)) continue;
+            if (ModFluidRegistry.isBlackListed(f)) continue;
             if (FluidRegistry.getFluid(f.getName().toLowerCase() + "_fluid") != null) continue;
             ft.registerFluidType(f);
         }
@@ -54,7 +58,7 @@ public class FluidTranslator
     public void init(FMLInitializationEvent event)
     {
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
-        MinecraftForge.EVENT_BUS.register(new CustomEventHandler());
+        MinecraftForge.EVENT_BUS.register(new ModEventHandler());
     }
 
 }

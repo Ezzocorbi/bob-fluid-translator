@@ -1,6 +1,6 @@
 package com.fluidtranslator.adapter;
 
-import com.fluidtranslator.CustomFluidRegistry;
+import com.fluidtranslator.ModFluidRegistry;
 import com.hbm.inventory.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -15,7 +15,7 @@ import net.minecraftforge.fluids.Fluid;
  * </ul>
  *
  * Internally, it stores the HBM {@link FluidStack} as the "source of truth".
- * The Forge counterpart is created on demand via {@link CustomFluidRegistry}.
+ * The Forge counterpart is created on demand via {@link ModFluidRegistry}.
  *
  * This class ensures that both systems can work with the same abstraction,
  * without the need for external conversion logic every time fluid data
@@ -74,7 +74,7 @@ public class UnifiedFluidStack {
         if(isEmpty()) {
             return null;
         }
-        return new net.minecraftforge.fluids.FluidStack(CustomFluidRegistry.getForgeFluid(hbmFluidStack.type), hbmFluidStack.fill);
+        return new net.minecraftforge.fluids.FluidStack(ModFluidRegistry.getForgeFluid(hbmFluidStack.type), hbmFluidStack.fill);
     }
 
     public UnifiedFluid getFluid() {
