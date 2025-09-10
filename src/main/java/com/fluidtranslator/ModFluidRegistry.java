@@ -64,11 +64,11 @@ public class ModFluidRegistry {
      */
     public CustomFluidBlock registerFluidType(FluidType fluidType) {
         String name = fluidType.getName().toLowerCase() + "_fluid";
-        Fluid forgeFluid = new Fluid(name);
+        CustomFluid forgeFluid = new CustomFluid(name);
         FluidRegistry.registerFluid(forgeFluid);
 
         CustomFluidBlock block = new CustomFluidBlock(forgeFluid, Material.water, name);
-        GameRegistry.registerBlock(block, name + "_block");
+        GameRegistry.registerBlock(block, CustomFluidItemBlock.class, name + "_block");
         forgeFluid.setBlock(block);
 
         GenericBucket genericBucket = new GenericBucket(forgeFluid, block);

@@ -11,25 +11,18 @@ public class CustomFluidBlock extends BlockFluidClassic {
     @SideOnly(Side.CLIENT)
     protected IIcon stillIcon;
 
+    private final Fluid fluid;
 
     public CustomFluidBlock(Fluid fluid, Material material, String name) {
         super(fluid, material);
         setBlockName(name);
+        this.fluid = fluid;
     }
 
-//    @Override
-//    @SideOnly(Side.CLIENT)
-//    public void registerBlockIcons(IIconRegister iconRegister) {
-//        if(iconRegister instanceof TextureMap) {
-//            TextureMap map = (TextureMap) iconRegister;
-//            CustomAtlasSprite sprite = new CustomAtlasSprite("bobfluidtranslator:tile.honeyTexture");
-//            if (map.setTextureEntry(sprite.getIconName(), sprite)) {
-//                System.out.println("[Code 1338] Sprite in registerBlockIcons: " + sprite.toString());
-//            }
-//            setIcons(sprite);
-//            getFluid().setIcons(sprite);
-//        }
-//    }
+    @Override
+    public String getLocalizedName() {
+        return ModFluidRegistry.getHBMFluid(fluid).getLocalizedName();
+    }
 
     @Override
     @SideOnly(Side.CLIENT)
@@ -40,5 +33,9 @@ public class CustomFluidBlock extends BlockFluidClassic {
     public void setIcons(IIcon icon) {
         getFluid().setIcons(icon);
         this.stillIcon = icon;
+    }
+
+    public Fluid getFluid() {
+        return this.fluid;
     }
 }
