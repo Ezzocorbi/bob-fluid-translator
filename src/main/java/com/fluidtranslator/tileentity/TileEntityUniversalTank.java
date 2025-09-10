@@ -40,7 +40,7 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
     // Used to add a delay between transfer operations with items
     private Item lastInputItem;
     public int operationDelay = 0;
-    private final int OPERATION_TIME_TICKS = 10;
+    public final int OPERATION_TIME_TICKS = 10;
 
     // Use default capacity of 8000 mb
     public TileEntityUniversalTank() {
