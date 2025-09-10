@@ -1,18 +1,12 @@
 package com.fluidtranslator.blocks;
 
 import com.fluidtranslator.FluidTranslator;
-import com.fluidtranslator.TankModes;
 import com.fluidtranslator.container.GuiIds;
 import com.fluidtranslator.tileentity.TileEntityUniversalTank;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.inventory.fluid.tank.FluidTank;
-import com.hbm.items.machine.IItemFluidIdentifier;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 
 public class BlockUniversalTank extends BlockContainer {

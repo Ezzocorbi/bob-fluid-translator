@@ -2,11 +2,15 @@ package com.fluidtranslator.container.hbmadapter;
 
 import com.fluidtranslator.ModFluidRegistry;
 import com.fluidtranslator.FluidTranslator;
+import com.fluidtranslator.network.MessageSetOperationMode;
+import com.fluidtranslator.network.MessageSetTankIndex;
+import com.fluidtranslator.network.ModNetwork;
 import com.fluidtranslator.tileentity.TileEntityHBMAdapter;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.gui.GuiInfoContainer;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
@@ -16,6 +20,7 @@ import net.minecraftforge.fluids.FluidTankInfo;
 
 public class GuiHBMAdapter extends GuiInfoContainer {
     private static final ResourceLocation texture = new ResourceLocation(FluidTranslator.MODID + ":textures/gui/fluid_adapter.png");
+    private static final ResourceLocation buttons = new ResourceLocation("minecraft:textures/gui/container/villager.png");
     private final TileEntityHBMAdapter tank;
     private final int xLeftPixel = 74; // left pixel where the tank starts
     private final int yTopPixel = 8; // top pixel where the tank starts
@@ -29,17 +34,53 @@ public class GuiHBMAdapter extends GuiInfoContainer {
         this.ySize = 166;
     }
 
+    protected void mouseClicked(int x, int y, int i) {
+        super.mouseClicked(x, y, i);
+
+        if(x < guiLeft + 62 + 8 && x >= guiLeft + 62 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
+            mc.getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
+            int len = tank.getAllTanks().length;
+            int newIndex = (tank.getTankIndex() - 1 + len) % len;
+            tank.setTankIndex(newIndex);
+            ModNetwork.INSTANCE.sendToServer(new MessageSetTankIndex(tank.xCoord, tank.yCoord, tank.zCoord, newIndex));
+            return;
+        }
+
+        if(x < guiLeft + 105 + 8 && x >= guiLeft + 105 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
+            mc.getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
+            int len = tank.getAllTanks().length;
+            int newIndex = (tank.getTankIndex() + 1) % len;
+            tank.setTankIndex(newIndex);
+            ModNetwork.INSTANCE.sendToServer(new MessageSetTankIndex(tank.xCoord, tank.yCoord, tank.zCoord, newIndex));
+            return;
+        }
+    }
+
     @Override
-    protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        int color = 4210752;
-        int x = 8;
-        int y = 6;
+    protected void drawGuiContainerForegroundLayer(int x, int y) {
+        if(x < guiLeft + 62 + 8 && x >= guiLeft + 62 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
+            mc.getTextureManager().bindTexture(buttons);
+            drawTexturedModalRect(62, 37, 190, 22, 8, 13);
+            this.drawInfo(new String[] {"Cycle tank"}, x + 2 - guiLeft, y + 1 - guiTop);
+            return;
+        }
+
+        if(x < guiLeft + 105 + 8 && x >= guiLeft + 105 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
+            mc.getTextureManager().bindTexture(buttons);
+            drawTexturedModalRect(105, 37, 190, 3, 8, 13);
+            this.drawInfo(new String[] {"Cycle tank"}, x + 2 - guiLeft, y + 1 - guiTop);
+            return;
+        }
     }
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
-        mc.getTextureManager().bindTexture(texture); // bind GUI texture
+        mc.getTextureManager().bindTexture(texture);
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
+
+        mc.getTextureManager().bindTexture(buttons);
+        drawTexturedModalRect(guiLeft + 62, guiTop + 37, 178, 22, 8, 13);
+        drawTexturedModalRect(guiLeft + 105, guiTop + 37, 178, 3, 8, 13);
 
         try {
             FluidTankInfo[] tankInfoArr = tank.getTankInfo(ForgeDirection.UP);
@@ -69,7 +110,7 @@ public class GuiHBMAdapter extends GuiInfoContainer {
                 drawTankInfo(new String[] {"Empty"}, mouseX, mouseY);
             }
         } catch (IllegalArgumentException e) {
-            drawTankInfo(new String[] {"Error: unable to render fluid"}, mouseX, mouseY);
+            drawTankInfo(new String[] {"Error: unable to render fluid:"}, mouseX, mouseY);
             System.err.println(String.format("An error occurred while trying to render the fluid contained in the tank at %d %d %d", tank.xCoord, tank.yCoord, tank.zCoord));
             e.printStackTrace();
         }
