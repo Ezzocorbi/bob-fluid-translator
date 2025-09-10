@@ -13,6 +13,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
+import org.lwjgl.opengl.GL11;
 
 public class GuiFluidTank extends GuiInfoContainer {
     private static final ResourceLocation texture = new ResourceLocation(FluidTranslator.MODID + ":textures/gui/fluid_tank.png");
@@ -34,7 +35,16 @@ public class GuiFluidTank extends GuiInfoContainer {
         int color = 4210752;
         int x = 8;
         int y = 6;
-        this.fontRendererObj.drawString("wait for: " + tank.operationDelay, x, y, color);
+//        this.fontRendererObj.drawString("wait for: " + tank.operationDelay, x, y, color);
+
+        int delay = tank.OPERATION_TIME_TICKS - tank.operationDelay;
+        if (delay > 0) {
+            mc.getTextureManager().bindTexture(texture); // bind GUI texture
+            GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+
+            int offset = (int)((delay / (double)tank.OPERATION_TIME_TICKS) * (5 - 1));
+            drawTexturedModalRect(50, 20, 178 + offset * 16, 4, 12, 8);
+        }
     }
 
     @Override
