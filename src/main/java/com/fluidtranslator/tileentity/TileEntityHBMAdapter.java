@@ -32,6 +32,12 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     private final ItemStack[] inventoryStacks = new ItemStack[2];
     private boolean initialized = false;
 
+    /**
+     * If this is true, the adapter will reset the {@link FluidType}
+     * of the connected tank to {@code Fluids.NONE} when it empties the tank
+     */
+    private boolean resetFluidType = true;
+
     public TileEntityHBMAdapter() {
 
     }
@@ -45,10 +51,20 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         return this.tankIndex;
     }
 
+    public void shouldResetFluidType(boolean set) {
+        this.resetFluidType = set;
+        markDirtyAndUpdate();
+    }
+
+    public boolean doesResetFluidType() {
+        return this.resetFluidType;
+    }
+
     @Override
     public void writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
         tag.setInteger("tankIndex", tankIndex);
+        tag.setBoolean("resetFluidType", resetFluidType);
         if (targetDirection != null) {
             tag.setInteger("fluidHandlerDirection", targetDirection.ordinal());
         }
@@ -59,6 +75,9 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         super.readFromNBT(tag);
         if (tag.hasKey("tankIndex")) {
             tankIndex = tag.getInteger("tankIndex");
+        }
+        if (tag.hasKey("resetFluidType")) {
+            resetFluidType = tag.getBoolean("resetFluidType");
         }
         if (tag.hasKey("fluidHandlerDirection")) {
             targetDirection = ForgeDirection.getOrientation(tag.getInteger("fluidHandlerDirection"));
@@ -221,7 +240,7 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         FluidStack fs = new FluidStack(fluid, drained);
         if (doDrain) {
             tank.setFill(tank.getFill() - drained);
-            if (tank.getFill() <= 0) tank.setTankType(Fluids.NONE); // TODO set to NONE only if requested
+            if (resetFluidType && tank.getFill() <= 0) tank.setTankType(Fluids.NONE);
             markDirtyAndUpdate();
         }
         return fs;
