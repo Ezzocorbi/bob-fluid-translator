@@ -29,20 +29,20 @@ public class BlockUniversalTank extends BlockContainer {
         return new TileEntityUniversalTank();
     }
 
-    @Override
-    public void onBlockClicked(World world, int x, int y, int z, EntityPlayer player) {
-        super.onBlockClicked(world, x, y, z, player);
-        if(world.isRemote) { // Don't execute this logic on the server, the client is enough
-            return;
-        }
-        TileEntity te = world.getTileEntity(x, y, z);
-        if (te instanceof TileEntityUniversalTank) {
-            TileEntityUniversalTank teTank = (TileEntityUniversalTank) te;
-            teTank.setTankMode((short)((teTank.getTankMode() + 1) % 4));
-            String modeS = TankModes.byOrdinal(teTank.getTankMode()).toString().toLowerCase();
-            player.addChatMessage(new ChatComponentText("Set tank mode to " + modeS));
-        }
-    }
+//    @Override
+//    public void onBlockClicked(World world, int x, int y, int z, EntityPlayer player) {
+//        super.onBlockClicked(world, x, y, z, player);
+//        if(world.isRemote) { // Don't execute this logic on the server, the client is enough
+//            return;
+//        }
+//        TileEntity te = world.getTileEntity(x, y, z);
+//        if (te instanceof TileEntityUniversalTank) {
+//            TileEntityUniversalTank teTank = (TileEntityUniversalTank) te;
+//            teTank.setTankMode((short)((teTank.getTankMode() + 1) % 4));
+//            String modeS = TankModes.byOrdinal(teTank.getTankMode()).toString().toLowerCase();
+//            player.addChatMessage(new ChatComponentText("Set tank mode to " + modeS));
+//        }
+//    }
 
     @Override
     public boolean onBlockActivated(World world, int x, int y, int z,
