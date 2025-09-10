@@ -1,6 +1,6 @@
 package com.fluidtranslator.container.hbmadapter;
 
-import com.fluidtranslator.CustomFluidRegistry;
+import com.fluidtranslator.ModFluidRegistry;
 import com.fluidtranslator.FluidTranslator;
 import com.fluidtranslator.tileentity.TileEntityHBMAdapter;
 import com.hbm.inventory.fluid.FluidType;
@@ -89,7 +89,7 @@ public class GuiHBMAdapter extends GuiInfoContainer {
 
     @SideOnly(Side.CLIENT)
     private void drawFluid(FluidStack fluid, int x, int y, int width, int height) {
-        FluidType fluidType = CustomFluidRegistry.getHBMFluid(fluid.getFluid());
+        FluidType fluidType = ModFluidRegistry.getHBMFluid(fluid.getFluid());
         mc.getTextureManager().bindTexture(fluidType.getTexture());
 
         int capacity = tank.getTankInfo(ForgeDirection.UP)[0].capacity;

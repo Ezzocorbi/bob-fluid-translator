@@ -1,12 +1,16 @@
 package com.fluidtranslator.container.universaltank;
 
-import com.fluidtranslator.CustomFluidRegistry;
+import com.fluidtranslator.ModFluidRegistry;
 import com.fluidtranslator.FluidTranslator;
+import com.fluidtranslator.network.MessageSetOperationMode;
+import com.fluidtranslator.network.ModNetwork;
 import com.fluidtranslator.tileentity.TileEntityUniversalTank;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.gui.GuiInfoContainer;
+import com.hbm.lib.RefStrings;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
@@ -17,6 +21,7 @@ import org.lwjgl.opengl.GL11;
 
 public class GuiFluidTank extends GuiInfoContainer {
     private static final ResourceLocation texture = new ResourceLocation(FluidTranslator.MODID + ":textures/gui/fluid_tank.png");
+    private static final ResourceLocation barrelTexture = new ResourceLocation(RefStrings.MODID + ":textures/gui/storage/gui_barrel.png");
     private final TileEntityUniversalTank tank;
     private final int xLeftPixel = 74; // left pixel where the tank starts
     private final int yTopPixel = 8; // top pixel where the tank starts
@@ -30,12 +35,27 @@ public class GuiFluidTank extends GuiInfoContainer {
         this.ySize = 166;
     }
 
+    protected void mouseClicked(int x, int y, int i) {
+        super.mouseClicked(x, y, i);
+
+        if(x < guiLeft + 151 + 18 && x >= guiLeft + 151 && y <= guiTop + 34 + 18 && y > guiTop + 34) {
+            mc.getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
+            short newMode = (short) ((tank.getTankMode() + 1) % 4);
+            ModNetwork.INSTANCE.sendToServer(new MessageSetOperationMode(tank.xCoord, tank.yCoord, tank.zCoord, newMode));
+        }
+    }
+
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         int color = 4210752;
         int x = 8;
         int y = 6;
 //        this.fontRendererObj.drawString("wait for: " + tank.operationDelay, x, y, color);
+
+        mc.getTextureManager().bindTexture(barrelTexture);
+        int u = 176;
+        int v = tank.getTankMode() * 18;
+        drawTexturedModalRect(151, 34, u, v, 18, 18);
 
         int delay = tank.OPERATION_TIME_TICKS - tank.operationDelay;
         if (delay > 0) {
@@ -88,7 +108,7 @@ public class GuiFluidTank extends GuiInfoContainer {
 
     @SideOnly(Side.CLIENT)
     private void drawFluid(FluidStack fluid, int x, int y, int width, int height) {
-        FluidType fluidType = CustomFluidRegistry.getHBMFluid(fluid.getFluid());
+        FluidType fluidType = ModFluidRegistry.getHBMFluid(fluid.getFluid());
         mc.getTextureManager().bindTexture(fluidType.getTexture());
 
         int capacity = tank.getTankInfo(ForgeDirection.UP)[0].capacity;

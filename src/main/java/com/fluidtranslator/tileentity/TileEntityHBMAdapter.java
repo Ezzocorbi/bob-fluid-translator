@@ -1,10 +1,9 @@
 package com.fluidtranslator.tileentity;
 
 import api.hbm.fluidmk2.IFluidStandardTransceiverMK2;
-import com.fluidtranslator.CustomFluidRegistry;
+import com.fluidtranslator.ModFluidRegistry;
 import com.fluidtranslator.adapter.UnifiedFluidStack;
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.blocks.fluid.GenericFluid;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTank;
@@ -164,7 +163,7 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         FluidTank tank = fluidHandler.getAllTanks()[0];
 
         // Look for corresponding fluid type from HBM
-        FluidType type = CustomFluidRegistry.getHBMFluid(resource.getFluid());
+        FluidType type = ModFluidRegistry.getHBMFluid(resource.getFluid());
 
         if (type == null) return 0; // No correspondence to any HBM fluid, don't fill
         if (type.getID() == Fluids.NONE.getID()) return 0; // Don't fill with 'NONE' fluid
@@ -184,7 +183,7 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         if (resource == null || resource.getFluid() == null) return null;
         if (fluidHandler == null) return null;
         FluidTank tank = fluidHandler.getAllTanks()[0];
-        if (tank.getTankType() != CustomFluidRegistry.getHBMFluid(resource.getFluid())) return null;
+        if (tank.getTankType() != ModFluidRegistry.getHBMFluid(resource.getFluid())) return null;
         return drain(from, resource.amount, doDrain);
 
     }
@@ -196,7 +195,7 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         if (tank.getFill() <= 0) return null;
 
         int drained = Math.min(maxDrain, tank.getFill());
-        Fluid fluid = CustomFluidRegistry.getForgeFluid(tank.getTankType());
+        Fluid fluid = ModFluidRegistry.getForgeFluid(tank.getTankType());
         if (fluid == null) return null; // No correspondence to any Forge fluid, don't drain
 
         FluidStack fs = new FluidStack(fluid, drained);
@@ -212,7 +211,7 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     public boolean canFill(ForgeDirection from, Fluid fluid) {
         if (fluidHandler == null) return false;
         FluidTank tank = fluidHandler.getAllTanks()[0];
-        FluidType incomingFluid = CustomFluidRegistry.getHBMFluid(fluid);
+        FluidType incomingFluid = ModFluidRegistry.getHBMFluid(fluid);
         FluidType storedFluid = tank.getTankType();
 
         if (incomingFluid == null) return false;
@@ -226,7 +225,7 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     public boolean canDrain(ForgeDirection from, Fluid fluid) {
         if (fluidHandler == null) return false;
         FluidTank tank = fluidHandler.getAllTanks()[0];
-        return tank.getTankType().getID() == CustomFluidRegistry.getHBMFluid(fluid).getID();
+        return tank.getTankType().getID() == ModFluidRegistry.getHBMFluid(fluid).getID();
     }
 
     @Override

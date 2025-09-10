@@ -2,7 +2,7 @@ package com.fluidtranslator.tileentity;
 
 import api.hbm.fluidmk2.FluidNode;
 import api.hbm.fluidmk2.IFluidStandardTransceiverMK2;
-import com.fluidtranslator.CustomFluidRegistry;
+import com.fluidtranslator.ModFluidRegistry;
 import com.fluidtranslator.TankModes;
 import com.fluidtranslator.adapter.UnifiedFluid;
 import com.fluidtranslator.adapter.UnifiedFluidStack;
@@ -35,7 +35,7 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
     protected FluidNode node;
     protected FluidType lastType = Fluids.NONE;
     public UnifiedFluidTank tank;
-    public short mode = (short)TankModes.DISABLED.ordinal;
+    private short mode = (short)TankModes.DISABLED.ordinal;
 
     // Used to add a delay between transfer operations with items
     private Item lastInputItem;
@@ -54,6 +54,18 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
     }
 
     /// HBM-RELEVANT IMPLEMENTATION ///
+
+    public void setTankMode(short mode) {
+        if (mode < 0 || mode > 3) {
+            throw new IllegalArgumentException("Invalid tank mode: " + mode);
+        }
+        this.mode = mode;
+        markDirtyAndUpdate();
+    }
+
+    public short getTankMode() {
+        return this.mode;
+    }
 
     @Override
     public FluidTank[] getSendingTanks() {
@@ -251,14 +263,14 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
         if (fluidStack != null) {
             // Full bucket -> tank
             if (!canFill(ForgeDirection.UP, fluidStack.getFluid())) return;
-            transferBucketToTank(buckets, fluidStack);
+            transferBucketToTank(fluidStack);
         } else {
             // Empty bucket <- tank
             transferTankToBucket(buckets);
         }
     }
 
-    private void transferBucketToTank(ItemStack stackIn, FluidStack fluidStack) {
+    private void transferBucketToTank(FluidStack fluidStack) {
         ItemStack out = getStackInSlot(1);
         if (out != null && out.stackSize >= out.getMaxStackSize()) return;
 
@@ -426,6 +438,7 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
     @Override
     public void writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
+        tag.setShort("tankMode", this.mode);
         NBTTagCompound tankTag = tank.writeToNBT();
         tag.setTag("tank", tankTag);
     }
@@ -433,6 +446,9 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
+        if (tag.hasKey("tankMode")) {
+            this.mode = tag.getShort("tankMode");
+        }
         if (tag.hasKey("tank")) {
             tank.readFromNBT(tag.getCompoundTag("tank"));
         }
@@ -482,7 +498,7 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
 
     @Override
     public boolean canFill(ForgeDirection from, Fluid fluid) {
-        FluidType incomingFluid = CustomFluidRegistry.getHBMFluid(fluid);
+        FluidType incomingFluid = ModFluidRegistry.getHBMFluid(fluid);
         FluidType storedFluid = tank.toHBM().getTankType();
 
         if (incomingFluid == null) return false;
@@ -494,7 +510,7 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
     @Override
     public boolean canDrain(ForgeDirection from, Fluid fluid) {
         if (fluid == null) return false;
-        return tank.toHBM().getTankType().getID() == CustomFluidRegistry.getHBMFluid(fluid).getID();
+        return tank.toHBM().getTankType().getID() == ModFluidRegistry.getHBMFluid(fluid).getID();
     }
 
     @Override

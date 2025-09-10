@@ -38,8 +38,8 @@ public class BlockUniversalTank extends BlockContainer {
         TileEntity te = world.getTileEntity(x, y, z);
         if (te instanceof TileEntityUniversalTank) {
             TileEntityUniversalTank teTank = (TileEntityUniversalTank) te;
-            teTank.mode = (short)((teTank.mode + 1) % 4);
-            String modeS = TankModes.byOrdinal(teTank.mode).toString().toLowerCase();
+            teTank.setTankMode((short)((teTank.getTankMode() + 1) % 4));
+            String modeS = TankModes.byOrdinal(teTank.getTankMode()).toString().toLowerCase();
             player.addChatMessage(new ChatComponentText("Set tank mode to " + modeS));
         }
     }

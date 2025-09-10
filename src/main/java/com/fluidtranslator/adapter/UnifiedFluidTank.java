@@ -1,6 +1,6 @@
 package com.fluidtranslator.adapter;
 
-import com.fluidtranslator.CustomFluidRegistry;
+import com.fluidtranslator.ModFluidRegistry;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTank;
 import net.minecraft.nbt.NBTTagCompound;
@@ -14,7 +14,7 @@ import net.minecraftforge.fluids.FluidStack;
  *
  * Internally, this class uses an HBM {@link FluidTank} as the "source of truth".
  * Conversions to Forge-compatible tanks are handled on demand via
- * {@link CustomFluidRegistry}.
+ * {@link ModFluidRegistry}.
  *
  * Key features:
  * <ul>
@@ -48,7 +48,7 @@ public class UnifiedFluidTank {
     }
 
     public net.minecraftforge.fluids.FluidTank toForge() {
-        Fluid forgeFluid = CustomFluidRegistry.getForgeFluid(hbmTank.getTankType());
+        Fluid forgeFluid = ModFluidRegistry.getForgeFluid(hbmTank.getTankType());
         if (forgeFluid == null) {
             return new net.minecraftforge.fluids.FluidTank(null, 0); // empty fluid tank
         }
