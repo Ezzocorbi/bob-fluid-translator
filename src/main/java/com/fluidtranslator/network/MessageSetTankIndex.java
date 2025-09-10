@@ -1,7 +1,6 @@
 package com.fluidtranslator.network;
 
 import com.fluidtranslator.tileentity.TileEntityHBMAdapter;
-import com.fluidtranslator.tileentity.TileEntityUniversalTank;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
@@ -9,6 +8,17 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
 
+/**
+ * Network message sent from the client to the server to select a specific tank
+ * inside a machine connected to a {@link TileEntityHBMAdapter}.
+ * <p>
+ * The {@code index} field identifies which tank in the machine's internal array
+ * of tanks should be targeted. This message is typically triggered when the player
+ * interacts with the adapter's GUI to change the currently selected tank.
+ * <p>
+ * The server receives this message and updates the adapter's state accordingly.
+ * The {@link Handler} inner class handles the server-side logic.
+ */
 public class MessageSetTankIndex implements IMessage {
     private int x, y, z;
     private int index;

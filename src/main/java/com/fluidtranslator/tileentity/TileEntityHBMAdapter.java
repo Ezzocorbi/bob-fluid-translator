@@ -187,8 +187,6 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         // Look for corresponding fluid type from HBM
         FluidType type = ModFluidRegistry.getHBMFluid(resource.getFluid());
 
-        if (type == null) return 0; // No correspondence to any HBM fluid, don't fill
-        if (type.getID() == Fluids.NONE.getID()) return 0; // Don't fill with 'NONE' fluid
         if (!canFill(from, resource.getFluid())) return 0; // Incompatible fluids
 
         int toFill = Math.min(resource.amount, tank.getMaxFill() - tank.getFill());
@@ -223,7 +221,7 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         FluidStack fs = new FluidStack(fluid, drained);
         if (doDrain) {
             tank.setFill(tank.getFill() - drained);
-            if (tank.getFill() <= 0) tank.setTankType(Fluids.NONE);
+            if (tank.getFill() <= 0) tank.setTankType(Fluids.NONE); // TODO set to NONE only if requested
             markDirtyAndUpdate();
         }
         return fs;
