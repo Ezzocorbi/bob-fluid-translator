@@ -48,7 +48,7 @@ public class FluidAtlasSprite extends TextureAtlasSprite {
             return false;
         } catch (IOException e) {
             String errorMsg = "Fatal error: Unable to load texture " + location.getResourceDomain() + location.getResourcePath();
-            System.out.println("Code 3344:" + errorMsg);
+            System.err.println(errorMsg);
             Minecraft.getMinecraft().crashed(new CrashReport(errorMsg, e));
             return false;
         }
