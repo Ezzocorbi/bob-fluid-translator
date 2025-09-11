@@ -9,6 +9,7 @@ import com.fluidtranslator.proxy.CommonProxy;
 import com.fluidtranslator.tileentity.*;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.ModItems;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.SidedProxy;
@@ -16,6 +17,9 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fluids.FluidRegistry;
 
@@ -46,10 +50,13 @@ public class FluidTranslator
             ft.registerFluidType(f);
         }
 
+        // Init blocks
+        ModBlocks.initBlocks();
+
         // Register blocks
-        GameRegistry.registerBlock(new BlockUniversalTank(8000), UniversalTankItemBlock.class, "universalTank");
-        GameRegistry.registerBlock(new BlockUniversalTank(16000), UniversalTankItemBlock.class, "universalTankLarge");
-        GameRegistry.registerBlock(new BlockHBMAdapter(), HBMAdapterItemBlock.class, "ntmAdapter");
+        GameRegistry.registerBlock(ModBlocks.universalTank, UniversalTankItemBlock.class, "universalTank");
+        GameRegistry.registerBlock(ModBlocks.universalTankLarge, UniversalTankItemBlock.class, "universalTankLarge");
+        GameRegistry.registerBlock(ModBlocks.hbmAdapter, HBMAdapterItemBlock.class, "ntmAdapter");
 
         // Register tile entities
         GameRegistry.registerTileEntity(TileEntityUniversalTank.class, "teUniversalTank");
@@ -62,6 +69,36 @@ public class FluidTranslator
     {
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
         MinecraftForge.EVENT_BUS.register(new ModEventHandler());
+        addRecipes();
     }
 
+    public void addRecipes() {
+        GameRegistry.addRecipe(new ItemStack(ModBlocks.universalTank),
+                "XLX",
+                "XCX",
+                "XLX",
+                'X', ModItems.plate_polymer,
+                'L', ModItems.plate_lead,
+                'C', ModItems.fluid_tank_empty
+        );
+
+        GameRegistry.addRecipe(new ItemStack(ModBlocks.universalTankLarge),
+                "XLX",
+                "XCX",
+                "XLX",
+                'X', ModItems.plate_polymer,
+                'L', ModItems.plate_lead,
+                'C', ModItems.fluid_barrel_empty
+        );
+
+        GameRegistry.addRecipe(new ItemStack(ModBlocks.hbmAdapter),
+                "XWX",
+                "ZYZ",
+                "XWX",
+                'X', ModItems.plate_steel,
+                'Y', new ItemStack(ModItems.circuit, 1, 8),
+                'W', Items.comparator,
+                'Z', new ItemStack(com.hbm.blocks.ModBlocks.fluid_duct_neo)
+        );
+    }
 }
