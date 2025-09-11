@@ -63,8 +63,6 @@ public class ModEventHandler {
 
                 Fluid forgeFluid = ModFluidRegistry.getForgeFluid(fluidType);
                 if (forgeFluid == null) continue;
-                System.out.println(fluidType.getName());
-                System.out.println(forgeFluid.getName());
                 GenericBucket bucket = GenericBucket.getBuckerForFluid(forgeFluid);
                 if (bucket == null) continue;
                 bucket.setIcon(sprite);

@@ -458,13 +458,11 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
     public Packet getDescriptionPacket() {
         NBTTagCompound nbtTag = new NBTTagCompound();
         this.writeToNBT(nbtTag);
-        System.out.println("Sending packet");
         return new S35PacketUpdateTileEntity(this.xCoord, this.yCoord, this.zCoord, 1, nbtTag);
     }
 
     @Override
     public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity pkt) {
-        System.out.println("Received packet");
         this.readFromNBT(pkt.func_148857_g());
     }
 
