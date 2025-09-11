@@ -5,6 +5,7 @@ import com.fluidtranslator.container.GuiIds;
 import com.fluidtranslator.tileentity.TileEntityHBMAdapter;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
@@ -122,5 +123,14 @@ public class BlockHBMAdapter extends BlockContainer {
                                 EntityLivingBase player, ItemStack stack) {
         int meta = determineOrientation(world, x, y, z, player);
         world.setBlockMetadataWithNotify(x, y, z, meta, 2);
+    }
+
+    @Override
+    public void onNeighborBlockChange(World world, int x, int y, int z, Block neighbor) {
+        super.onNeighborBlockChange(world, x, y, z, neighbor);
+        TileEntity te = world.getTileEntity(x, y, z);
+        if (te instanceof TileEntityHBMAdapter) {
+            ((TileEntityHBMAdapter) te).onNeighborChanged(world, neighbor);
+        }
     }
 }

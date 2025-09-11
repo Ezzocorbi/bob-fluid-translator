@@ -18,4 +18,11 @@ public class CustomFluid extends Fluid {
         if (fluidType != null) return fluidType.getLocalizedName();
         else return super.getLocalizedName(stack);
     }
+
+    // I don't want to write the full lang file for every fluid of every fork of NTM, so I
+    // just use this method to force other mods to use the english localized name from NTM
+    @Override
+    public String getUnlocalizedName() {
+        return this.getLocalizedName(new FluidStack(this, 0));
+    }
 }

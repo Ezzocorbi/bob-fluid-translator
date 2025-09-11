@@ -50,6 +50,7 @@ public class GuiHBMAdapter extends GuiInfoContainer {
 
         // Left button click action
         if (x < guiLeft + 62 + 8 && x >= guiLeft + 62 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
+            if (!tank.isConnected()) return;
             mc.getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
             int len = tank.getAllTanks().length;
             int newIndex = (tank.getTankIndex() - 1 + len) % len;
@@ -60,6 +61,7 @@ public class GuiHBMAdapter extends GuiInfoContainer {
 
         // Right button click action
         if (x < guiLeft + 105 + 8 && x >= guiLeft + 105 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
+            if (!tank.isConnected()) return;
             mc.getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
             int len = tank.getAllTanks().length;
             int newIndex = (tank.getTankIndex() + 1) % len;
@@ -95,13 +97,12 @@ public class GuiHBMAdapter extends GuiInfoContainer {
         drawArrowButtonHighlights(mouseX, mouseY);
 
         try {
-            FluidTankInfo[] tankInfoArr = tank.getTankInfo(ForgeDirection.UP);
-            if (tankInfoArr == null) {
+            if (!tank.isConnected()) {
                 drawTankInfo(new String[] {"No tank attached"}, mouseX, mouseY);
                 return;
             }
 
-            FluidTankInfo tankInfo = tankInfoArr[0];
+            FluidTankInfo tankInfo = tank.getTankInfo(ForgeDirection.UP)[0];
             FluidStack fluid = tankInfo.fluid;
             if (fluid != null && fluid.amount > 0) {
                 // Setup and draw fluid in tank
