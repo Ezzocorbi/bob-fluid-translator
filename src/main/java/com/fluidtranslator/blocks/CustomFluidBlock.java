@@ -1,5 +1,6 @@
-package com.fluidtranslator;
+package com.fluidtranslator.blocks;
 
+import com.fluidtranslator.ModFluidRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.material.Material;

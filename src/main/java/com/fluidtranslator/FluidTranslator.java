@@ -2,6 +2,8 @@ package com.fluidtranslator;
 
 import com.fluidtranslator.blocks.*;
 import com.fluidtranslator.container.GuiHandler;
+import com.fluidtranslator.item.HBMAdapterItemBlock;
+import com.fluidtranslator.item.UniversalTankItemBlock;
 import com.fluidtranslator.network.ModNetwork;
 import com.fluidtranslator.proxy.CommonProxy;
 import com.fluidtranslator.tileentity.*;
@@ -45,12 +47,13 @@ public class FluidTranslator
         }
 
         // Register blocks
-        GameRegistry.registerBlock(new BlockUniversalTank(), "universalTank");
-        GameRegistry.registerBlock(new BlockHBMAdapter(), "hbmInterface");
+        GameRegistry.registerBlock(new BlockUniversalTank(8000), UniversalTankItemBlock.class, "universalTank");
+        GameRegistry.registerBlock(new BlockUniversalTank(16000), UniversalTankItemBlock.class, "universalTankLarge");
+        GameRegistry.registerBlock(new BlockHBMAdapter(), HBMAdapterItemBlock.class, "ntmAdapter");
 
         // Register tile entities
         GameRegistry.registerTileEntity(TileEntityUniversalTank.class, "teUniversalTank");
-        GameRegistry.registerTileEntity(TileEntityHBMAdapter.class, "teHBMInterface");
+        GameRegistry.registerTileEntity(TileEntityHBMAdapter.class, "teNTMAdapter");
 
     }
 
