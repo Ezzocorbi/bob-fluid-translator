@@ -1,6 +1,5 @@
 package com.fluidtranslator.item;
 
-import com.fluidtranslator.blocks.BlockUniversalTank;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
