@@ -38,14 +38,8 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
     private short mode = (short)TankModes.DISABLED.ordinal;
 
     // Used to add a delay between transfer operations with items
-    private Item lastInputItem;
     public int operationDelay = 0;
     public final int OPERATION_TIME_TICKS = 10;
-
-    // Use default capacity of 8000 mb
-    public TileEntityUniversalTank() {
-        this(8000);
-    }
 
     public TileEntityUniversalTank(int capacity) {
         super(1);
@@ -468,29 +462,33 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
 
     @Override
     public int fill(ForgeDirection from, FluidStack resource, boolean doFill) {
+        if (resource == null) return 0;
         if (!canFill(from, resource.getFluid())) return 0;
         int filled = tank.fill(UnifiedFluidStack.fromForge(resource), doFill);
-        if(filled > 0 && doFill) {
-            this.markDirtyAndUpdate();
-        }
+        if(filled > 0 && doFill) this.markDirtyAndUpdate();
         return filled;
     }
 
     @Override
     public FluidStack drain(ForgeDirection from, FluidStack resource, boolean doDrain) {
+        if (resource == null || resource.getFluid() == null) return null;
+        if (!canDrain(from, resource.getFluid())) return null;
+
         UnifiedFluidStack drained = tank.drain(resource.amount, doDrain);
-        if(drained != null && !drained.isEmpty() && doDrain) {
-            this.markDirtyAndUpdate();
-        }
+        if (drained == null || drained.isEmpty()) return null;
+
+        if (doDrain) markDirtyAndUpdate();
         return drained.toForge();
     }
 
     @Override
     public FluidStack drain(ForgeDirection from, int maxDrain, boolean doDrain) {
+        if (maxDrain <= 0) return null;
+
         UnifiedFluidStack drained = tank.drain(maxDrain, doDrain);
-        if(drained != null && !drained.isEmpty()  && doDrain) {
-            this.markDirtyAndUpdate();
-        }
+        if (drained == null || drained.isEmpty()) return null;
+
+        if (doDrain) markDirtyAndUpdate();
         return drained.toForge();
     }
 
