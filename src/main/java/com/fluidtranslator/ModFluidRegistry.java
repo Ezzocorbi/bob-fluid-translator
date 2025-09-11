@@ -1,5 +1,7 @@
 package com.fluidtranslator;
 
+import com.fluidtranslator.blocks.CustomFluidBlock;
+import com.fluidtranslator.item.CustomFluidItemBlock;
 import com.fluidtranslator.item.GenericBucket;
 import com.google.common.collect.HashBiMap;
 import com.hbm.inventory.fluid.FluidType;

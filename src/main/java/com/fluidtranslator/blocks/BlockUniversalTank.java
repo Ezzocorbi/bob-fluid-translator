@@ -11,32 +11,20 @@ import net.minecraft.world.World;
 
 public class BlockUniversalTank extends BlockContainer {
 
-    public BlockUniversalTank() {
+    private final int capacity;
+
+    public BlockUniversalTank(int capacity) {
         super(Material.rock);
         setBlockName("universalFluidTank");
         setBlockTextureName("minecraft:glass");
         setHardness(4.0F);
+        this.capacity = capacity;
     }
 
     @Override
-    public TileEntity createNewTileEntity(World world, int capacity) {
-        return new TileEntityUniversalTank();
+    public TileEntity createNewTileEntity(World world, int meta) {
+        return new TileEntityUniversalTank(this.capacity);
     }
-
-//    @Override
-//    public void onBlockClicked(World world, int x, int y, int z, EntityPlayer player) {
-//        super.onBlockClicked(world, x, y, z, player);
-//        if(world.isRemote) { // Don't execute this logic on the server, the client is enough
-//            return;
-//        }
-//        TileEntity te = world.getTileEntity(x, y, z);
-//        if (te instanceof TileEntityUniversalTank) {
-//            TileEntityUniversalTank teTank = (TileEntityUniversalTank) te;
-//            teTank.setTankMode((short)((teTank.getTankMode() + 1) % 4));
-//            String modeS = TankModes.byOrdinal(teTank.getTankMode()).toString().toLowerCase();
-//            player.addChatMessage(new ChatComponentText("Set tank mode to " + modeS));
-//        }
-//    }
 
     @Override
     public boolean onBlockActivated(World world, int x, int y, int z,
@@ -48,5 +36,9 @@ public class BlockUniversalTank extends BlockContainer {
             }
         }
         return true;
+    }
+
+    public int getCapacity() {
+        return capacity;
     }
 }

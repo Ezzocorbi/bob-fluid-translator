@@ -37,8 +37,7 @@ public class BlockHBMAdapter extends BlockContainer {
 
     public BlockHBMAdapter() {
         super(Material.rock);
-        setBlockName("hbmInterface");
-        setBlockTextureName(FluidTranslator.MODID + ":hbm_interface_block");
+        setBlockName("ntmAdapter");
         setHardness(2.0F);
     }
 

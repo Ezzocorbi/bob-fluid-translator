@@ -1,5 +1,6 @@
-package com.fluidtranslator;
+package com.fluidtranslator.item;
 
+import com.fluidtranslator.blocks.CustomFluidBlock;
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;

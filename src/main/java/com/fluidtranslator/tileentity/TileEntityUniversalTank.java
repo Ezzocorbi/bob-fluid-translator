@@ -44,7 +44,7 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
 
     // Use default capacity of 8000 mb
     public TileEntityUniversalTank() {
-        this(32000);
+        this(8000);
     }
 
     public TileEntityUniversalTank(int capacity) {
