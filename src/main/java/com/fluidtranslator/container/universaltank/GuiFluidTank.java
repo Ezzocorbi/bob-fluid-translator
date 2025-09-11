@@ -48,26 +48,20 @@ public class GuiFluidTank extends GuiInfoContainer {
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        mc.getTextureManager().bindTexture(barrelTexture);
-        int u = 176;
-        int v = tank.getTankMode() * 18;
-        drawTexturedModalRect(151, 34, u, v, 18, 18);
 
-        int delay = tank.OPERATION_TIME_TICKS - tank.operationDelay;
-        if (delay > 0) {
-            mc.getTextureManager().bindTexture(texture); // bind GUI texture
-            GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-
-            int offset = (int)((delay / (double)tank.OPERATION_TIME_TICKS) * (5 - 1));
-            drawTexturedModalRect(50, 20, 178 + offset * 16, 4, 12, 8);
-        }
     }
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
-        mc.getTextureManager().bindTexture(texture); // bind GUI texture
+
+        // Base GUI texture
+        mc.getTextureManager().bindTexture(texture);
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 
+        // Tank mode button and progress indicator
+        drawTankControls();
+
+        // Fluid and tank info
         FluidTankInfo tankInfo = tank.getTankInfo(ForgeDirection.UP)[0];
         FluidStack fluid = tankInfo.fluid;
         if (fluid != null && fluid.amount > 0) {
@@ -127,5 +121,22 @@ public class GuiFluidTank extends GuiInfoContainer {
         tessellator.addVertexWithUV(maxX, minY, this.zLevel, maxU, minV);
         tessellator.addVertexWithUV(minX, minY, this.zLevel, minU, minV);
         tessellator.draw();
+    }
+
+    @SideOnly(Side.CLIENT)
+    private void drawTankControls() {
+        mc.getTextureManager().bindTexture(barrelTexture);
+        int u = 176;
+        int v = tank.getTankMode() * 18;
+        drawTexturedModalRect(guiLeft + 151, guiTop + 34, u, v, 18, 18);
+
+        int delay = tank.OPERATION_TIME_TICKS - tank.operationDelay;
+        if (delay > 0) {
+            mc.getTextureManager().bindTexture(texture); // texture contains progress indicator
+            GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+
+            int offset = (int)((delay / (double)tank.OPERATION_TIME_TICKS) * (5 - 1));
+            drawTexturedModalRect(guiLeft + 50, guiTop + 20, 178 + offset * 16, 4, 12, 8);
+        }
     }
 }

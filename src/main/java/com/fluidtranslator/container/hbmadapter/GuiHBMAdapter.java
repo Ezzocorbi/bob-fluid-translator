@@ -11,6 +11,7 @@ import com.hbm.inventory.gui.GuiInfoContainer;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -23,6 +24,9 @@ import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
 import org.lwjgl.opengl.GL11;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class GuiHBMAdapter extends GuiInfoContainer {
     private static final ResourceLocation texture = new ResourceLocation(FluidTranslator.MODID + ":textures/gui/fluid_adapter.png");
@@ -75,49 +79,6 @@ public class GuiHBMAdapter extends GuiInfoContainer {
     @Override
     protected void drawGuiContainerForegroundLayer(int x, int y) {
 
-        // Left button tooltip
-        if (x < guiLeft + 62 + 8 && x >= guiLeft + 62 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
-            mc.getTextureManager().bindTexture(buttons);
-            drawTexturedModalRect(62, 37, 190, 22, 8, 13);
-            this.drawInfo(new String[] {"Cycle tanks"}, x + 2 - guiLeft, y + 1 - guiTop);
-            return;
-        }
-
-        // Right button tooltip
-        if (x < guiLeft + 105 + 8 && x >= guiLeft + 105 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
-            mc.getTextureManager().bindTexture(buttons);
-            drawTexturedModalRect(105, 37, 190, 3, 8, 13);
-            this.drawInfo(new String[] {"Cycle tanks"}, x + 2 - guiLeft, y + 1 - guiTop);
-            return;
-        }
-
-        // Reset fluid-type button tooltip
-        if (x < guiLeft + 150 + 16 && x >= guiLeft + 150 && y <= guiTop + 35 + 16 && y > guiTop + 35) {
-            String[] info;
-            String formatting = EnumChatFormatting.GRAY + "" + EnumChatFormatting.ITALIC;
-            if (tank.doesResetFluidType()) {
-                info = new String[] {"Reset tank's fluid ID on empty",
-                        formatting + "Tank will forget its fluid ID when emptied",
-                        formatting + "Useful for automation through this adapter"};
-            } else {
-                info = new String[] {"Don't reset tank's fluid ID on empty",
-                        formatting + "Tank will keep its fluid ID when emptied",
-                        formatting + "This adapter won't insert a different fluid"};
-            }
-
-            GL11.glPushMatrix();
-            GL11.glScalef(0.75F, 0.75F, 0.75F);
-            this.drawInfo(info, x - guiLeft, y + 42 - guiTop);
-            GL11.glPopMatrix();
-        }
-
-        // Reset fluid-type button icon
-        if (tank.doesResetFluidType()) {
-            drawItem(Items.bucket, 150, 35);
-            return;
-        } else {
-            drawItem(Items.water_bucket, 150, 35);
-        }
     }
 
     @Override
@@ -129,6 +90,9 @@ public class GuiHBMAdapter extends GuiInfoContainer {
         mc.getTextureManager().bindTexture(buttons);
         drawTexturedModalRect(guiLeft + 62, guiTop + 37, 178, 22, 8, 13);
         drawTexturedModalRect(guiLeft + 105, guiTop + 37, 178, 3, 8, 13);
+
+        drawBucketButton(mouseX, mouseY);
+        drawArrowButtonHighlights(mouseX, mouseY);
 
         try {
             FluidTankInfo[] tankInfoArr = tank.getTankInfo(ForgeDirection.UP);
@@ -203,6 +167,69 @@ public class GuiHBMAdapter extends GuiInfoContainer {
         tessellator.draw();
     }
 
+
+    /**
+     * Renders the blue highlights on the left/right arrow buttons when hovered with the mouse pointer
+     * @param x mouseX
+     * @param y mouseY
+     */
+    @SideOnly(Side.CLIENT)
+    private void drawArrowButtonHighlights(int x, int y) {
+        // Left button tooltip
+        if (x < guiLeft + 62 + 8 && x >= guiLeft + 62 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
+            mc.getTextureManager().bindTexture(buttons);
+            drawTexturedModalRect(guiLeft + 62, guiTop + 37, 190, 22, 8, 13);
+            this.drawInfo(new String[] {"Cycle tanks"}, x + 2, y + 1);
+            return;
+        }
+
+        // Right button tooltip
+        if (x < guiLeft + 105 + 8 && x >= guiLeft + 105 && y <= guiTop + 37 + 13 && y > guiTop + 37) {
+            mc.getTextureManager().bindTexture(buttons);
+            drawTexturedModalRect(guiLeft + 105, guiTop + 37, 190, 3, 8, 13);
+            this.drawInfo(new String[] {"Cycle tanks"}, x + 2, y + 1);
+            return;
+        }
+    }
+
+    /**
+     * Renders the bucket button on the right of the GUI
+     * @param x mouseX
+     * @param y mouseY
+     */
+    @SideOnly(Side.CLIENT)
+    private void drawBucketButton(int x, int y) {
+        // Reset fluid-type button tooltip
+        if (x < guiLeft + 150 + 16 && x >= guiLeft + 150 && y <= guiTop + 35 + 16 && y > guiTop + 35) {
+            String[] info;
+            String formatting = EnumChatFormatting.GRAY + "" + EnumChatFormatting.ITALIC;
+            if (tank.doesResetFluidType()) {
+                info = new String[] {"Reset tank's fluid ID on empty",
+                        formatting + "Tank will forget its fluid ID when emptied",
+                        formatting + "Useful for automation through this adapter"};
+            } else {
+                info = new String[] {"Keep tank's fluid ID on empty",
+                        formatting + "Tank will keep its fluid ID when emptied",
+                        formatting + "This adapter won't insert a different fluid"};
+            }
+
+            float scale = 0.75f;
+            int xPos = (int)((guiLeft + 110) / scale);
+            int yPos = (int)((guiTop + 56) / scale);
+            GL11.glPushMatrix();
+            GL11.glScalef(scale, scale, 1.0f);
+            this.drawFixedTooltip(Arrays.asList(info), xPos, yPos);
+            GL11.glPopMatrix();
+        }
+
+        // Reset fluid-type button icon
+        if (tank.doesResetFluidType()) {
+            drawItem(Items.bucket, guiLeft + 150, guiTop + 35);
+        } else {
+            drawItem(Items.water_bucket, guiLeft + 150, guiTop + 35);
+        }
+    }
+
     @SideOnly(Side.CLIENT)
     private void drawItem(Item item, int x, int y) {
         mc.getTextureManager().bindTexture(TextureMap.locationItemsTexture);
@@ -220,5 +247,85 @@ public class GuiHBMAdapter extends GuiInfoContainer {
         t.addVertexWithUV(x + 16,y, zLevel, maxU, minV);
         t.addVertexWithUV(x, y, zLevel, minU, minV);
         t.draw();
+    }
+
+    @SideOnly(Side.CLIENT)
+    private void drawFixedTooltip(List<String> lines, int x, int y) {
+        if (lines == null || lines.isEmpty()) return;
+
+        RenderHelper.disableStandardItemLighting();
+        GL11.glDisable(GL11.GL_LIGHTING);
+        GL11.glDisable(GL11.GL_DEPTH_TEST);
+
+        int maxWidth = 0;
+        for (String line : lines) {
+            int width = this.fontRendererObj.getStringWidth(line);
+            if (width > maxWidth) maxWidth = width;
+        }
+
+        int tooltipX = x;
+        int tooltipY = y;
+        int tooltipHeight = 8;
+
+        if (lines.size() > 1) {
+            tooltipHeight += 2 + (lines.size() - 1) * 10;
+        }
+
+        int backgroundColor = 0xF0100010; // black
+        int borderColor1   = 0x505000FF; // purple border
+        int borderColor2   = 0x5028007F;
+
+        this.zLevel = 300.0F;
+        itemRender.zLevel = 300.0F;
+
+        // Background rectangle
+        drawGradientRect(tooltipX - 3, tooltipY - 4,
+                tooltipX + maxWidth + 3, tooltipY - 3,
+                backgroundColor, backgroundColor);
+        drawGradientRect(tooltipX - 3, tooltipY + tooltipHeight + 3,
+                tooltipX + maxWidth + 3, tooltipY + tooltipHeight + 4,
+                backgroundColor, backgroundColor);
+        drawGradientRect(tooltipX - 3, tooltipY - 3,
+                tooltipX + maxWidth + 3, tooltipY + tooltipHeight + 3,
+                backgroundColor, backgroundColor);
+        drawGradientRect(tooltipX - 4, tooltipY - 3,
+                tooltipX - 3, tooltipY + tooltipHeight + 3,
+                backgroundColor, backgroundColor);
+        drawGradientRect(tooltipX + maxWidth + 3, tooltipY - 3,
+                tooltipX + maxWidth + 4, tooltipY + tooltipHeight + 3,
+                backgroundColor, backgroundColor);
+
+        // Smooth border
+        drawGradientRect(tooltipX - 3, tooltipY - 2,
+                tooltipX - 2, tooltipY + tooltipHeight + 2,
+                borderColor1, borderColor2);
+        drawGradientRect(tooltipX + maxWidth + 2, tooltipY - 2,
+                tooltipX + maxWidth + 3, tooltipY + tooltipHeight + 2,
+                borderColor1, borderColor2);
+        drawGradientRect(tooltipX - 3, tooltipY - 3,
+                tooltipX + maxWidth + 3, tooltipY - 2,
+                borderColor1, borderColor1);
+        drawGradientRect(tooltipX - 3, tooltipY + tooltipHeight + 2,
+                tooltipX + maxWidth + 3, tooltipY + tooltipHeight + 3,
+                borderColor2, borderColor2);
+
+        // Text
+        int textY = tooltipY;
+        for (int i = 0; i < lines.size(); ++i) {
+            String line = lines.get(i);
+            this.fontRendererObj.drawStringWithShadow(line, tooltipX, textY, 0xFFFFFF);
+            if (i == 0) {
+                textY += 12;
+            } else {
+                textY += 10;
+            }
+        }
+
+        this.zLevel = 0.0F;
+        itemRender.zLevel = 0.0F;
+
+        GL11.glEnable(GL11.GL_LIGHTING);
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
+        RenderHelper.enableStandardItemLighting();
     }
 }
