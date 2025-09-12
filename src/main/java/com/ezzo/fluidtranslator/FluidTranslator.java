@@ -5,7 +5,6 @@ import com.ezzo.fluidtranslator.container.GuiHandler;
 import com.ezzo.fluidtranslator.item.HBMAdapterItemBlock;
 import com.ezzo.fluidtranslator.item.UniversalTankItemBlock;
 import com.ezzo.fluidtranslator.network.ModNetwork;
-import com.ezzo.fluidtranslator.proxy.CommonProxy;
 import com.ezzo.fluidtranslator.tileentity.TileEntityHBMAdapter;
 import com.ezzo.fluidtranslator.tileentity.TileEntityUniversalTank;
 import com.hbm.inventory.fluid.FluidType;
@@ -31,10 +30,6 @@ public class FluidTranslator
 
     @Mod.Instance(FluidTranslator.MODID)
     public static FluidTranslator instance;
-
-    @SidedProxy(clientSide = "com.ezzo.fluidtranslator.proxy.ClientProxy",
-                serverSide = "com.ezzo.fluidtranslator.proxy.ServerProxy")
-    public static CommonProxy proxy;
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event)
