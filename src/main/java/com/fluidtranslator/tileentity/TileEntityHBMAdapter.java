@@ -352,6 +352,15 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         }
     }
 
+    /**
+     * @return Returns the selected thank of the connected machine.
+     * Returns null if the adapter is not connected.
+     */
+    public FluidTank getInternalTank() {
+        if (!isConnected()) return null;
+        return fluidHandler.getAllTanks()[tankIndex];
+    }
+
     @Override
     public void updateEntity() {
         if (!initialized && worldObj != null) {
