@@ -72,6 +72,16 @@ public class UnifiedFluidTank {
         return hbmTank.getMaxFill();
     }
 
+    /**
+     * Attempts tank capacity and returns the difference between the old capacity and the new capacity.
+     * Does not change capacity of old capacity is greater, in which case it returns zero.
+     * @param newSize New capacity
+     * @return Difference between old capacity and new capacity
+     */
+    public int changeTankSize(int newSize) {
+        return hbmTank.changeTankSize(newSize);
+    }
+
     public int fill(UnifiedFluidStack resource, boolean doFill) {
         if (resource == null)
         {
@@ -168,16 +178,25 @@ public class UnifiedFluidTank {
     public NBTTagCompound writeToNBT() {
         NBTTagCompound tag = new NBTTagCompound();
         tag.setInteger("fluidId", hbmTank.getTankType().getID());
+        tag.setInteger("maxFill", this.getCapacity());
         tag.setInteger("fill", this.getFill());
         return tag;
     }
 
     public void readFromNBT(NBTTagCompound tag) {
-        int fluidId = tag.getInteger("fluidId");
-        UnifiedFluid fluid = UnifiedFluid.fromHBM(Fluids.fromID(fluidId));
-        this.setFluid(fluid);
+        if (tag.hasKey("fluidId")) {
+            int fluidId = tag.getInteger("fluidId");
+            UnifiedFluid fluid = UnifiedFluid.fromHBM(Fluids.fromID(fluidId));
+            this.setFluid(fluid);
+        }
 
-        int fill = tag.getInteger("fill");
-        this.setFill(fill);
+        if (tag.hasKey("maxFill")) {
+            hbmTank.changeTankSize(tag.getInteger("maxFill"));
+        }
+
+        if (tag.hasKey("fill")) {
+            int fill = tag.getInteger("fill");
+            this.setFill(fill);
+        }
     }
 }

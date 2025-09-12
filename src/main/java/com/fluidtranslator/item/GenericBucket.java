@@ -1,6 +1,5 @@
 package com.fluidtranslator.item;
 
-import com.fluidtranslator.CustomFluid;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
@@ -18,13 +17,13 @@ import java.util.HashMap;
 
 public class GenericBucket extends ItemBucket {
 
-    private CustomFluid fluid;
+    private final Fluid fluid;
     private static final HashMap<Fluid, GenericBucket> fluidToBucket = new HashMap<Fluid, GenericBucket>();
 
     @SideOnly(Side.CLIENT)
     private IIcon icon;
 
-    public GenericBucket(CustomFluid fluid, Block block) {
+    public GenericBucket(Fluid fluid, Block block) {
         super(block);
         this.setUnlocalizedName(fluid.getName() + "bucket");
         this.setContainerItem(Items.bucket);
