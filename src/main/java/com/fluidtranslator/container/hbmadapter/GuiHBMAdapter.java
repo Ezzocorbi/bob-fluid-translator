@@ -7,6 +7,7 @@ import com.fluidtranslator.network.MessageSetTankIndex;
 import com.fluidtranslator.network.ModNetwork;
 import com.fluidtranslator.tileentity.TileEntityHBMAdapter;
 import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.tank.FluidTank;
 import com.hbm.inventory.gui.GuiInfoContainer;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -103,28 +104,30 @@ public class GuiHBMAdapter extends GuiInfoContainer {
             }
 
             FluidTankInfo tankInfo = tank.getTankInfo(ForgeDirection.UP)[0];
-            FluidStack fluid = tankInfo.fluid;
-            if (fluid != null && fluid.amount > 0) {
+            FluidStack fluidStack = tankInfo.fluid;
+            if (fluidStack != null && fluidStack.amount > 0) {
                 // Setup and draw fluid in tank
                 int xStart = xLeftPixel;
                 int yStart = yTopPixel + tankHeight;
-                int capacity = tankInfo.capacity;
-                drawFluid(fluid,
+                drawFluid(fluidStack,
                         guiLeft + xStart, guiTop + yStart,
                         tankWidth, tankHeight);
-
-                // Setup and draw tank info
-                String[] info = new String[] {
-                        fluid.getLocalizedName(),
-                        fluid.amount + "/" + capacity + "mB"
-                };
-                drawTankInfo(info, mouseX, mouseY);
-            } else {
-                drawTankInfo(new String[] {"Empty"}, mouseX, mouseY);
             }
+
+            String[] info;
+            FluidTank hbmTank = tank.getInternalTank();
+            if (hbmTank == null) {
+                info = new String[] {"No tank attached"};
+            } else {
+                info = new String[] {
+                        hbmTank.getTankType().getLocalizedName(),
+                        hbmTank.getFill() + "/" + hbmTank.getMaxFill() + "mB"
+                };
+            }
+            drawTankInfo(info, mouseX, mouseY);
         } catch (IllegalArgumentException e) {
             drawTankInfo(new String[] {"Error: unable to render fluid:"}, mouseX, mouseY);
-            System.err.println(String.format("An error occurred while trying to render the fluid contained in the tank at %d %d %d", tank.xCoord, tank.yCoord, tank.zCoord));
+            System.err.println(String.format("An error occurred while trying to render the fluid in the adapter at %d %d %d", tank.xCoord, tank.yCoord, tank.zCoord));
             e.printStackTrace();
         }
     }
