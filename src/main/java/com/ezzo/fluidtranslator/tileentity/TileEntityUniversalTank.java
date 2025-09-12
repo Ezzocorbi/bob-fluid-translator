@@ -13,12 +13,13 @@ import com.hbm.inventory.fluid.tank.FluidTank;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.items.machine.ItemFluidTank;
 import com.hbm.lib.Library;
-import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.uninos.UniNodespace;
 import com.hbm.util.fauxpointtwelve.BlockPos;
 import com.hbm.util.fauxpointtwelve.DirPos;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
@@ -30,12 +31,13 @@ import net.minecraftforge.fluids.*;
 import javax.annotation.Nullable;
 import java.util.HashSet;
 
-public class TileEntityUniversalTank extends TileEntityMachineBase implements IFluidStandardTransceiverMK2, IFluidHandler {
+public class TileEntityUniversalTank extends TileEntityLoadedBase implements IInventory, IFluidStandardTransceiverMK2, IFluidHandler {
 
     protected FluidNode node;
     protected FluidType lastType = Fluids.NONE;
     public UnifiedFluidTank tank;
     private short mode = (short)TankModes.DISABLED.ordinal;
+    private final ItemStack[] slots = new ItemStack[2];
 
     // Used to add a delay between transfer operations with items
     public int operationDelay = 0;
@@ -46,8 +48,7 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
     }
 
     public TileEntityUniversalTank(int capacity) {
-        super(1);
-        slots = new ItemStack[2];
+        super();
         tank = new UnifiedFluidTank(capacity);
     }
 
@@ -98,10 +99,6 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
         return true;
     }
 
-    @Override
-    public String getName() {
-        return "hbmFluidTankTest";
-    }
 
     public long transferFluid(FluidType type, int pressure, long amount) {
         long toTransfer = Math.min(getDemand(type, pressure), amount);
