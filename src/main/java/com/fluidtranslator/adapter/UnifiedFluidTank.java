@@ -1,6 +1,7 @@
 package com.fluidtranslator.adapter;
 
 import com.fluidtranslator.ModFluidRegistry;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTank;
 import net.minecraft.nbt.NBTTagCompound;
@@ -172,6 +173,13 @@ public class UnifiedFluidTank {
         if (this.toHBM().getTankType().getID() == fluid.toHBM().getID()) return true;
         if (this.getFill() > 0) return false;
         else hbmTank.setTankType(fluid.toHBM());
+        return true;
+    }
+
+    public boolean setFluidSafe(FluidType type) {
+        if (this.toHBM().getTankType().getID() == type.getID()) return true;
+        if (this.getFill() > 0) return false;
+        else hbmTank.setTankType(type);
         return true;
     }
 

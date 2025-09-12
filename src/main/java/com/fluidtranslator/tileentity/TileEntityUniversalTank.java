@@ -10,6 +10,8 @@ import com.fluidtranslator.adapter.UnifiedFluidTank;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTank;
+import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.ItemFluidIdentifier;
 import com.hbm.items.machine.ItemFluidTank;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -247,6 +249,8 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
             } else if (com.hbm.inventory.FluidContainerRegistry.getFullContainer(stackIn, tank.toHBM().getTankType()) != null) {
                 // Case of an empty container from HBM
                 handleEmptyHBMTank(stackIn);
+            } else if (stackIn.getItem() instanceof IItemFluidIdentifier) {
+                handleFluidIdentifier(stackIn);
             }
         } else {
             operationDelay--;
@@ -254,6 +258,15 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
     }
 
     ///  FLUID HANDLING ///
+
+    private void handleFluidIdentifier(ItemStack stackIn) {
+        assert stackIn.getItem() instanceof IItemFluidIdentifier;
+        FluidType type = ((IItemFluidIdentifier)stackIn.getItem()).getType(null, 0, 0, 0, stackIn);
+        tank.toHBM().setTankType(type);
+        setInventorySlotContents(0, null);
+        setInventorySlotContents(1, stackIn);
+        markDirtyAndUpdate();
+    }
 
     private void handleBuckets(ItemStack buckets) {
         FluidStack fluidStack = FluidContainerRegistry.getFluidForFilledItem(buckets);
@@ -305,6 +318,7 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
     }
 
     private void handleFluidContainer(ItemStack containerIn) {
+        assert containerIn.getItem() instanceof IFluidContainerItem;
         if (containerIn.stackSize > 1) return;
         if (getStackInSlot(1) != null) return;
 
@@ -367,6 +381,7 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
 
     // Transfer from HBM portable tank to universal tank
     private void handleFullHBMTank(ItemStack tankIn) {
+        assert tankIn.getItem() instanceof ItemFluidTank;
         FluidType storedFluid = Fluids.fromID(tankIn.getItemDamage());
         int fluidAmount = com.hbm.inventory.FluidContainerRegistry.getFluidContent(tankIn, storedFluid);
         UnifiedFluidStack stackToTransfer = UnifiedFluidStack.fromHBM(storedFluid, fluidAmount);

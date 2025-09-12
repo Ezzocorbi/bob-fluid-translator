@@ -63,25 +63,26 @@ public class GuiFluidTank extends GuiInfoContainer {
 
         // Fluid and tank info
         FluidTankInfo tankInfo = tank.getTankInfo(ForgeDirection.UP)[0];
-        FluidStack fluid = tankInfo.fluid;
-        if (fluid != null && fluid.amount > 0) {
+        FluidStack fluidStack = tankInfo.fluid;
+        if (fluidStack != null && fluidStack.amount > 0) {
             // Setup and draw fluid in tank
             int xStart = xLeftPixel;
             int yStart = yTopPixel + tankHeight;
-            int capacity = tankInfo.capacity;
-            drawFluid(fluid,
+            drawFluid(fluidStack,
                     guiLeft + xStart, guiTop + yStart,
                     tankWidth, tankHeight);
-
-            // Setup and draw tank info
-            String[] info = new String[] {
-                    fluid.getLocalizedName(),
-                    fluid.amount + "/" + capacity + "mB"
-            };
-            drawTankInfo(info, mouseX, mouseY);
-        } else {
-            drawTankInfo(new String[] {"Empty"}, mouseX, mouseY);
         }
+
+        String[] info;
+        if (fluidStack == null) {
+            info = new String[] {"None"};
+        } else {
+            info = new String[] {
+                    fluidStack.getLocalizedName(),
+                    fluidStack.amount + "/" + tankInfo.capacity + "mB"
+            };
+        }
+        drawTankInfo(info, mouseX, mouseY);
     }
 
     @SideOnly(Side.CLIENT)
