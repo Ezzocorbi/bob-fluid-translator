@@ -7,6 +7,7 @@ import com.google.common.collect.HashBiMap;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.common.registry.LanguageRegistry;
 import net.minecraft.block.material.Material;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -66,8 +67,10 @@ public class ModFluidRegistry {
      */
     public CustomFluidBlock registerFluidType(FluidType fluidType) {
         String name = fluidType.getName().toLowerCase() + "_fluid";
-        CustomFluid forgeFluid = new CustomFluid(name);
+        Fluid forgeFluid = new Fluid(name);
         FluidRegistry.registerFluid(forgeFluid);
+
+        LanguageRegistry.instance().addStringLocalization("fluid." + name, "en_US", fluidType.getLocalizedName());
 
         CustomFluidBlock block = new CustomFluidBlock(forgeFluid, Material.water, name);
         GameRegistry.registerBlock(block, CustomFluidItemBlock.class, name + "_block");

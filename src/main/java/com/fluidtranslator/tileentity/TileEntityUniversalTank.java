@@ -18,7 +18,6 @@ import com.hbm.util.fauxpointtwelve.BlockPos;
 import com.hbm.util.fauxpointtwelve.DirPos;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
@@ -40,6 +39,10 @@ public class TileEntityUniversalTank extends TileEntityMachineBase implements IF
     // Used to add a delay between transfer operations with items
     public int operationDelay = 0;
     public final int OPERATION_TIME_TICKS = 10;
+
+    public TileEntityUniversalTank() {
+        this(8000);
+    }
 
     public TileEntityUniversalTank(int capacity) {
         super(1);
