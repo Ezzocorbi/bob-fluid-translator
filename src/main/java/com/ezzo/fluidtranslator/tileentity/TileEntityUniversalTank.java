@@ -99,14 +99,31 @@ public class TileEntityUniversalTank extends TileEntityLoadedBase implements IIn
         return true;
     }
 
-
     public long transferFluid(FluidType type, int pressure, long amount) {
-        long toTransfer = Math.min(getDemand(type, pressure), amount);
-        if (toTransfer > 0) {
-            tank.setFill(tank.getFill() + (int) toTransfer);
+        int tanks = 0;
+        for(FluidTank tank : getReceivingTanks()) {
+            if(tank.getTankType() == type && tank.getPressure() == pressure) tanks++;
+        }
+        if(tanks > 1) {
+            int firstRound = (int) Math.floor((double) amount / (double) tanks);
+            for(FluidTank tank : getReceivingTanks()) {
+                if(tank.getTankType() == type && tank.getPressure() == pressure) {
+                    int toAdd = Math.min(firstRound, tank.getMaxFill() - tank.getFill());
+                    tank.setFill(tank.getFill() + toAdd);
+                    amount -= toAdd;
+                }
+            }
             this.markDirtyAndUpdate();
         }
-        return amount - toTransfer;
+        if(amount > 0) for(FluidTank tank : getReceivingTanks()) {
+            if(tank.getTankType() == type && tank.getPressure() == pressure) {
+                int toAdd = (int) Math.min(amount, tank.getMaxFill() - tank.getFill());
+                tank.setFill(tank.getFill() + toAdd);
+                amount -= toAdd;
+                this.markDirtyAndUpdate();
+            }
+        }
+        return amount;
     }
 
     public long getFluidAvailable(FluidType type, int pressure) {
@@ -129,9 +146,9 @@ public class TileEntityUniversalTank extends TileEntityLoadedBase implements IIn
                     int toRem = Math.min(firstRound, tank.getFill());
                     tank.setFill(tank.getFill() - toRem);
                     amount -= toRem;
-                    this.markDirtyAndUpdate();
                 }
             }
+            this.markDirtyAndUpdate();
         }
         if(amount > 0) for(FluidTank tank : getSendingTanks()) {
             if(tank.getTankType() == type && tank.getPressure() == pressure) {
@@ -179,7 +196,7 @@ public class TileEntityUniversalTank extends TileEntityLoadedBase implements IIn
 
                 if(node != null && node.hasValidNet()) {
                     node.net.addProvider(this);
-                    node.net.addReceiver(this);
+                    node.net.addReceiver(this); // TODO fix buffer mode
                 }
             } else {
                 if(this.node != null) {
