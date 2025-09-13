@@ -162,6 +162,14 @@ public class UnifiedFluidTank {
     }
 
     /**
+     * Changes fluid type of the tank and <b>resets fill to zero</b>
+     * @param fluid New fluid
+     */
+    public void setFluid(FluidType fluid) {
+        hbmTank.setTankType(fluid);
+    }
+
+    /**
      * Attempts to set the tank's fluid type <b>only if the tank is empty</b>.
      *
      * @param fluid The new fluid type
