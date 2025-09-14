@@ -95,7 +95,6 @@ public class GuiHBMAdapter extends GuiInfoContainer {
         drawTexturedModalRect(guiLeft + 105, guiTop + 37, 178, 3, 8, 13);
 
         drawBucketButton(mouseX, mouseY);
-        drawArrowButtonHighlights(mouseX, mouseY);
 
         try {
             if (!tank.isConnected()) {
@@ -130,6 +129,8 @@ public class GuiHBMAdapter extends GuiInfoContainer {
             System.err.println(String.format("An error occurred while trying to render the fluid in the adapter at %d %d %d", tank.xCoord, tank.yCoord, tank.zCoord));
             e.printStackTrace();
         }
+
+        drawArrowButtonHighlights(mouseX, mouseY);
     }
 
     @SideOnly(Side.CLIENT)
