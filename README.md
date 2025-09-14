@@ -5,4 +5,4 @@ This mod is a bridge between [NTM](https://github.com/HbmMods/Hbm-s-Nuclear-Tech
 Check out the wiki in this GitHub repo.
 
 ### How does it work?
-When the game loads, the mod reads all fluids defined by NTM and creates a corresponding fluid using Forge's fluid API. This means that Bob Fluid Translator should be compatible with any version/fork of NTM.
+When the game loads, the mod reads all fluids defined by NTM and creates a corresponding fluid using Forge's fluid API. This means that Bob Fluid Translator should be compatible with any version/fork of NTM (as long as you're playing in 1.7.10).
