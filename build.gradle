@@ -101,7 +101,7 @@ processResources
     }
 }
 
-def modsDir = "~/PrismLauncher/instances/Forge Fluids/minecraft/mods"
+def modsDir = System.getProperty("user.home") + "/PrismLauncher/instances/Forge Fluids/minecraft/mods"
 
 task copyModJar(type: Copy) {
     from("$buildDir/libs") {

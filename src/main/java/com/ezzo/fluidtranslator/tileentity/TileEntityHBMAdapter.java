@@ -1,6 +1,9 @@
 package com.ezzo.fluidtranslator.tileentity;
 
+import api.hbm.fluidmk2.IFluidStandardReceiverMK2;
+import api.hbm.fluidmk2.IFluidStandardSenderMK2;
 import api.hbm.fluidmk2.IFluidStandardTransceiverMK2;
+import com.ezzo.fluidtranslator.FluidHandler;
 import com.ezzo.fluidtranslator.ModFluidRegistry;
 import com.ezzo.fluidtranslator.adapter.UnifiedFluidStack;
 import com.hbm.blocks.BlockDummyable;
@@ -27,7 +30,7 @@ import net.minecraftforge.fluids.IFluidHandler;
 
 public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, IInventory {
 
-    private IFluidStandardTransceiverMK2 fluidHandler;
+    private FluidHandler fluidHandler;
     private TileEntity lastConnectedMachine;
     private int tankIndex = 0;
     private final ItemStack[] inventoryStacks = new ItemStack[2];
@@ -53,7 +56,7 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     private boolean resetFluidType = true;
 
     public TileEntityHBMAdapter() {
-
+        fluidHandler = new FluidHandler();
     }
 
     public void setTankIndex(int index) {
@@ -115,7 +118,7 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         NBTTagCompound tag = pkt.func_148857_g();
         this.readFromNBT(tag);
         if (targetPos != null && isConnected())
-            findAndConnectTank(targetPos);
+            findAndConnectReceiver(targetPos);
     }
 
     /**
@@ -134,7 +137,7 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
             setConnected(false);
             markDirtyAndUpdate();
         } else if (lastConnectedMachine == null || !lastConnectedMachine.equals(newMachine)) {
-            if (findAndConnectTank(targetPos)) markDirtyAndUpdate();
+            if (findAndConnectReceiver(targetPos)) markDirtyAndUpdate();
         }
     }
 
@@ -158,64 +161,62 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         BlockPos offset = new BlockPos(direction.offsetX, direction.offsetY, direction.offsetZ);
         BlockPos searchPos = currentPos.add(offset);
 
-        boolean tankChanged = findAndConnectTank(searchPos);
-        if (tankChanged) markDirtyAndUpdate();
-        return tankChanged;
+        boolean receiverFound = findAndConnectReceiver(searchPos);
+        boolean senderFound = findAndConnectSender(searchPos);
+
+        if (receiverFound || senderFound) markDirtyAndUpdate();
+        return receiverFound || senderFound;
     }
 
     /**
-     * Attempts to locate and connect to a fluid transceiver in the given direction.
-     *
-     * Search order:
-     * 1. Check if the adjacent tile entity is directly a fluid transceiver.
-     * 2. If not, check if the adjacent block is part of a multiblock machine ({@link BlockDummyable}).
-     *    - Find the "core" tile entity of the multiblock.
-     *    - Verify that the block at the given position can connect fluids.
-     *    - If valid, set it as the transceiver.
-     *
+     * Attempts to locate and connect to a fluid receiver in the given direction.
      * @param target The position of the tile entity to search
-     * @return true if a valid fluid transceiver was found and connected, false otherwise
+     * @return true if a valid fluid receiver was found and connected, false otherwise
      */
-    private boolean findAndConnectTank(BlockPos target) {
-        // Try to get the tile entity at the neighbor position
-        TileEntity neighborTile = worldObj.getTileEntity(target.getX(), target.getY(), target.getZ());
+    private boolean findAndConnectReceiver(BlockPos target) {
+        TileEntity receiver = fluidHandler.findReceiver(worldObj, target);
+        if (receiver == null) return false;
 
-        // Case 1: Neighbor is directly a fluid transceiver
-        if (neighborTile instanceof IFluidStandardTransceiverMK2) {
-            connectToTransceiver((IFluidStandardTransceiverMK2) neighborTile, target);
-            this.lastConnectedMachine = neighborTile;
+        FluidType fluid = ((IFluidStandardReceiverMK2)receiver).getAllTanks()[tankIndex].getTankType();
+        ForgeDirection direction = getForgeDirection(target);
+
+        boolean canConnect = Library.canConnectFluid(
+                worldObj, target.getX(), target.getY(), target.getZ(), direction, fluid
+        );
+
+        if (canConnect) {
+            connectToHandler(fluidHandler, target);
+            this.lastConnectedMachine = receiver;
+            fluidHandler.setReceiver((IFluidStandardReceiverMK2) receiver);
             return true;
         }
 
-        // Case 2: Neighbor is part of a multiblock machine (BlockDummyable)
-        Block neighborBlock = worldObj.getBlock(target.getX(), target.getY(), target.getZ());
-        if (neighborBlock instanceof BlockDummyable) {
-            BlockDummyable dummy = (BlockDummyable) neighborBlock;
+        return false;
+    }
 
-            // Get the coordinates of the multiblock's core
-            int[] corePos = dummy.findCore(worldObj, target.getX(), target.getY(), target.getZ());
-            TileEntity coreTile = worldObj.getTileEntity(corePos[0], corePos[1], corePos[2]);
+    /**
+     * Attempts to locate and connect to a fluid receiver in the given direction.
+     * @param target The position of the tile entity to search
+     * @return true if a valid fluid receiver was found and connected, false otherwise
+     */
+    private boolean findAndConnectSender(BlockPos target) {
+        TileEntity sender = fluidHandler.findSender(worldObj, target);
+        if (sender == null) return false;
 
-            if (coreTile instanceof IFluidStandardTransceiverMK2) {
-                IFluidStandardTransceiverMK2 transceiver = (IFluidStandardTransceiverMK2) coreTile;
+        FluidType fluid = ((IFluidStandardSenderMK2) sender).getAllTanks()[tankIndex].getTankType();
+        ForgeDirection direction = getForgeDirection(target);
 
-                // Verify if the multiblock can connect fluids at this position
-                FluidType fluid = transceiver.getAllTanks()[tankIndex].getTankType();
-                ForgeDirection direction = getForgeDirection(target);
+        boolean canConnect = Library.canConnectFluid(
+                worldObj, target.getX(), target.getY(), target.getZ(), direction, fluid
+        );
 
-                boolean canConnect = Library.canConnectFluid(
-                        worldObj, target.getX(), target.getY(), target.getZ(), direction, fluid
-                );
-
-                if (canConnect) {
-                    connectToTransceiver(transceiver, target);
-                    this.lastConnectedMachine = coreTile;
-                    return true;
-                }
-            }
+        if (canConnect) {
+            connectToHandler(fluidHandler, target);
+            this.lastConnectedMachine = sender;
+            fluidHandler.setSender((IFluidStandardSenderMK2) sender);
+            return true;
         }
 
-        // No valid transceiver found
         return false;
     }
 
@@ -250,10 +251,14 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     /**
      * Helper method: sets the fluid handler and direction for this adapter.
      */
-    private void connectToTransceiver(IFluidStandardTransceiverMK2 transceiver, BlockPos targetPos) {
-        this.setFluidHandler(transceiver);
+    private void connectToHandler(FluidHandler handler, BlockPos targetPos) {
+        this.setFluidHandler(handler);
         this.setTargetPosition(targetPos);
         this.connected = true;
+    }
+
+    public void setFluidHandler(FluidHandler handler) {
+        this.fluidHandler = handler;
     }
 
     /**
@@ -365,7 +370,8 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     public void updateEntity() {
         if (!initialized && worldObj != null) {
             if (targetPos != null) {
-                findAndConnectTank(targetPos);
+                findAndConnectReceiver(targetPos);
+                findAndConnectSender(targetPos);
             }
             this.initialized = true;
         }
@@ -386,10 +392,6 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
 
     public BlockPos getTargetPos() {
         return this.targetPos;
-    }
-
-    public void setFluidHandler(IFluidStandardTransceiverMK2 handler) {
-        this.fluidHandler = handler;
     }
 
     public void markDirtyAndUpdate() {
