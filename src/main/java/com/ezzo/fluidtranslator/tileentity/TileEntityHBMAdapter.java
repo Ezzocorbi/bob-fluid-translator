@@ -116,8 +116,10 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity pkt) {
         NBTTagCompound tag = pkt.func_148857_g();
         this.readFromNBT(tag);
-        if (targetPos != null && isConnected())
+        if (targetPos != null && isConnected()) {
             findAndConnectReceiver(targetPos);
+            findAndConnectSender(targetPos);
+        }
     }
 
     /**
@@ -136,10 +138,14 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
             setConnected(false);
             markDirtyAndUpdate();
         } else if (lastConnectedMachine == null || !lastConnectedMachine.equals(newMachine)) {
+             // if newly connected machine is different from last
              boolean receiverFound = findAndConnectReceiver(targetPos);
              boolean senderFound = findAndConnectSender(targetPos);
 
-             if (receiverFound || senderFound) markDirtyAndUpdate();
+             if (receiverFound || senderFound) {
+                 this.tankIndex = 0;
+                 markDirtyAndUpdate();
+             }
         }
     }
 

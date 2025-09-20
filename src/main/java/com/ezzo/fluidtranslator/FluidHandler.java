@@ -124,7 +124,7 @@ public class FluidHandler {
 
             // Get the coordinates of the multiblock's core
             int[] corePos = dummy.findCore(world, tile.getX(), tile.getY(), tile.getZ());
-            if (corePos == null || corePos.length < 3) return null;
+//            if (corePos == null || corePos.length < 3) return null;
             TileEntity coreTile = world.getTileEntity(corePos[0], corePos[1], corePos[2]);
 
             if (coreTile instanceof IFluidStandardReceiverMK2) {
@@ -156,7 +156,7 @@ public class FluidHandler {
 
             // Get the coordinates of the multiblock's core
             int[] corePos = dummy.findCore(world, tile.getX(), tile.getY(), tile.getZ());
-            if (corePos == null || corePos.length < 3) return null;
+//            if (corePos == null || corePos.length < 3) return null;
             TileEntity coreTile = world.getTileEntity(corePos[0], corePos[1], corePos[2]);
 
             if (coreTile instanceof IFluidStandardSenderMK2) {
