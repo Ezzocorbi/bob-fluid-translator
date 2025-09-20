@@ -6,7 +6,6 @@ import api.hbm.fluidmk2.IFluidStandardTransceiverMK2;
 import com.ezzo.fluidtranslator.FluidHandler;
 import com.ezzo.fluidtranslator.ModFluidRegistry;
 import com.ezzo.fluidtranslator.adapter.UnifiedFluidStack;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTank;
@@ -30,7 +29,7 @@ import net.minecraftforge.fluids.IFluidHandler;
 
 public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, IInventory {
 
-    private FluidHandler fluidHandler;
+    private FluidHandler fluidHandler = new FluidHandler();
     private TileEntity lastConnectedMachine;
     private int tankIndex = 0;
     private final ItemStack[] inventoryStacks = new ItemStack[2];
@@ -56,7 +55,7 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     private boolean resetFluidType = true;
 
     public TileEntityHBMAdapter() {
-        fluidHandler = new FluidHandler();
+
     }
 
     public void setTankIndex(int index) {
@@ -137,7 +136,10 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
             setConnected(false);
             markDirtyAndUpdate();
         } else if (lastConnectedMachine == null || !lastConnectedMachine.equals(newMachine)) {
-            if (findAndConnectReceiver(targetPos)) markDirtyAndUpdate();
+             boolean receiverFound = findAndConnectReceiver(targetPos);
+             boolean senderFound = findAndConnectSender(targetPos);
+
+             if (receiverFound || senderFound) markDirtyAndUpdate();
         }
     }
 
@@ -174,6 +176,8 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
      * @return true if a valid fluid receiver was found and connected, false otherwise
      */
     private boolean findAndConnectReceiver(BlockPos target) {
+        if (fluidHandler == null) fluidHandler = new FluidHandler();
+
         TileEntity receiver = fluidHandler.findReceiver(worldObj, target);
         if (receiver == null) return false;
 
@@ -200,6 +204,8 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
      * @return true if a valid fluid receiver was found and connected, false otherwise
      */
     private boolean findAndConnectSender(BlockPos target) {
+        if (fluidHandler == null) fluidHandler = new FluidHandler();
+
         TileEntity sender = fluidHandler.findSender(worldObj, target);
         if (sender == null) return false;
 
