@@ -103,7 +103,7 @@ public class FluidHandler {
     }
 
     /**
-     * Attempts to locate the {@link IFluidStandardReceiverMK2} of a multiblock machine from any
+     * Attempts to locate the core tile ({@link IFluidStandardReceiverMK2}) of a multiblock machine from any
      * of its tiles
      * @param world World where the machine is located
      * @param tile Position of a tile that makes up the multiblock
@@ -124,7 +124,7 @@ public class FluidHandler {
 
             // Get the coordinates of the multiblock's core
             int[] corePos = dummy.findCore(world, tile.getX(), tile.getY(), tile.getZ());
-//            if (corePos == null || corePos.length < 3) return null;
+            if (corePos == null) return null;
             TileEntity coreTile = world.getTileEntity(corePos[0], corePos[1], corePos[2]);
 
             if (coreTile instanceof IFluidStandardReceiverMK2) {
@@ -135,7 +135,7 @@ public class FluidHandler {
     }
 
     /**
-     * Attempts to locate the {@link IFluidStandardSenderMK2} of a multiblock machine from any
+     * Attempts to locate the core tile ({@link IFluidStandardSenderMK2}) of a multiblock machine from any
      * of its tiles
      * @param world World where the machine is located
      * @param tile Position of a tile that makes up the multiblock
@@ -156,7 +156,7 @@ public class FluidHandler {
 
             // Get the coordinates of the multiblock's core
             int[] corePos = dummy.findCore(world, tile.getX(), tile.getY(), tile.getZ());
-//            if (corePos == null || corePos.length < 3) return null;
+            if (corePos == null) return null;
             TileEntity coreTile = world.getTileEntity(corePos[0], corePos[1], corePos[2]);
 
             if (coreTile instanceof IFluidStandardSenderMK2) {

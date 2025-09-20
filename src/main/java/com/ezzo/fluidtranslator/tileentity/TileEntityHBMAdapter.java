@@ -20,6 +20,7 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.Fluid;
@@ -34,7 +35,7 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     private int tankIndex = 0;
     private final ItemStack[] inventoryStacks = new ItemStack[2];
     private boolean initialized = false;
-    private BlockPos targetPos;
+    private BlockPos machinePos;
     private boolean connected = false;
 
     /**
@@ -82,8 +83,8 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         tag.setInteger("tankIndex", tankIndex);
         tag.setBoolean("resetFluidType", resetFluidType);
         tag.setBoolean("connected", connected);
-        if (targetPos != null) {
-            tag.setIntArray("targetPos", new int[] {targetPos.getX(), targetPos.getY(), targetPos.getZ()});
+        if (machinePos != null) {
+            tag.setIntArray("targetPos", new int[] {machinePos.getX(), machinePos.getY(), machinePos.getZ()});
         }
     }
 
@@ -98,7 +99,7 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         }
         if (tag.hasKey("targetPos")) {
             int[] pos = tag.getIntArray("targetPos");
-            targetPos = new BlockPos(pos[0], pos[1], pos[2]);
+            machinePos = new BlockPos(pos[0], pos[1], pos[2]);
         }
         if (tag.hasKey("connected")) {
             connected = tag.getBoolean("connected");
@@ -116,9 +117,9 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity pkt) {
         NBTTagCompound tag = pkt.func_148857_g();
         this.readFromNBT(tag);
-        if (targetPos != null && isConnected()) {
-            findAndConnectReceiver(targetPos);
-            findAndConnectSender(targetPos);
+        if (machinePos != null && isConnected()) {
+            findAndConnectReceiver(machinePos);
+            findAndConnectSender(machinePos);
         }
     }
 
@@ -130,17 +131,17 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
      * @param neighbor Neighbor block
      */
     public void onNeighborChanged(World world, Block neighbor) {
-        if (targetPos == null) return;
+        if (machinePos == null) return;
 
-        TileEntity newMachine = world.getTileEntity(targetPos.getX(), targetPos.getY(), targetPos.getZ());
+        TileEntity newMachine = world.getTileEntity(machinePos.getX(), machinePos.getY(), machinePos.getZ());
          if (newMachine == null) {
             this.fluidHandler = null;
             setConnected(false);
             markDirtyAndUpdate();
         } else if (lastConnectedMachine == null || !lastConnectedMachine.equals(newMachine)) {
              // if newly connected machine is different from last
-             boolean receiverFound = findAndConnectReceiver(targetPos);
-             boolean senderFound = findAndConnectSender(targetPos);
+             boolean receiverFound = findAndConnectReceiver(machinePos);
+             boolean senderFound = findAndConnectSender(machinePos);
 
              if (receiverFound || senderFound) {
                  this.tankIndex = 0;
@@ -184,10 +185,13 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     private boolean findAndConnectReceiver(BlockPos target) {
         if (fluidHandler == null) fluidHandler = new FluidHandler();
 
-        TileEntity receiver = fluidHandler.findReceiver(worldObj, target);
-        if (receiver == null) return false;
+        TileEntity core = fluidHandler.findReceiver(worldObj, target);
+        if (core == null) return false;
 
-        FluidType fluid = ((IFluidStandardReceiverMK2)receiver).getAllTanks()[tankIndex].getTankType();
+        FluidTank[] tanks = ((IFluidStandardReceiverMK2)core).getAllTanks();
+        tankIndex = Math.min(tanks.length - 1, tankIndex);
+
+        FluidType fluid = tanks[tankIndex].getTankType();
         ForgeDirection direction = getForgeDirection(target);
 
         boolean canConnect = Library.canConnectFluid(
@@ -195,9 +199,9 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         );
 
         if (canConnect) {
-            connectToHandler(fluidHandler, target);
-            this.lastConnectedMachine = receiver;
-            fluidHandler.setReceiver((IFluidStandardReceiverMK2) receiver);
+            connectToHandler(fluidHandler,target);
+            lastConnectedMachine = core;
+            fluidHandler.setReceiver((IFluidStandardReceiverMK2) core);
             return true;
         }
 
@@ -212,10 +216,13 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     private boolean findAndConnectSender(BlockPos target) {
         if (fluidHandler == null) fluidHandler = new FluidHandler();
 
-        TileEntity sender = fluidHandler.findSender(worldObj, target);
-        if (sender == null) return false;
+        TileEntity core = fluidHandler.findSender(worldObj, target);
+        if (core == null) return false;
 
-        FluidType fluid = ((IFluidStandardSenderMK2) sender).getAllTanks()[tankIndex].getTankType();
+        FluidTank[] tanks = ((IFluidStandardReceiverMK2)core).getAllTanks();
+        tankIndex = Math.min(tanks.length - 1, tankIndex);
+
+        FluidType fluid = tanks[tankIndex].getTankType();
         ForgeDirection direction = getForgeDirection(target);
 
         boolean canConnect = Library.canConnectFluid(
@@ -224,8 +231,8 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
 
         if (canConnect) {
             connectToHandler(fluidHandler, target);
-            this.lastConnectedMachine = sender;
-            fluidHandler.setSender((IFluidStandardSenderMK2) sender);
+            lastConnectedMachine = core;
+            fluidHandler.setSender((IFluidStandardSenderMK2) core);
             return true;
         }
 
@@ -250,10 +257,13 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         int dy = target.getY() - this.yCoord;
         int dz = target.getZ() - this.zCoord;
 
+        Vec3 direction = Vec3.createVectorHelper(dx, dy, dz);
+        direction = direction.normalize();
+
         for (ForgeDirection dir : ForgeDirection.values()) {
-            if (dx == dir.offsetX &&
-                dy == dir.offsetY &&
-                dz == dir.offsetZ) {
+            if (direction.xCoord == dir.offsetX &&
+                    direction.yCoord == dir.offsetY &&
+                    direction.zCoord == dir.offsetZ) {
                 return dir;
             }
         }
@@ -263,9 +273,9 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     /**
      * Helper method: sets the fluid handler and direction for this adapter.
      */
-    private void connectToHandler(FluidHandler handler, BlockPos targetPos) {
+    private void connectToHandler(FluidHandler handler, BlockPos corePos) {
         this.setFluidHandler(handler);
-        this.setTargetPosition(targetPos);
+        this.setMachinePos(corePos);
         this.connected = true;
     }
 
@@ -381,9 +391,9 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     @Override
     public void updateEntity() {
         if (!initialized && worldObj != null) {
-            if (targetPos != null) {
-                findAndConnectReceiver(targetPos);
-                findAndConnectSender(targetPos);
+            if (machinePos != null) {
+                findAndConnectReceiver(machinePos);
+                findAndConnectSender(machinePos);
             }
             this.initialized = true;
         }
@@ -398,12 +408,12 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
      * Set the direction where the fluid transceiver is located
      * @param position The position where neighbor is located
      */
-    public void setTargetPosition(BlockPos position) {
-        this.targetPos = position;
+    public void setMachinePos(BlockPos position) {
+        this.machinePos = position;
     }
 
-    public BlockPos getTargetPos() {
-        return this.targetPos;
+    public BlockPos getMachinePos() {
+        return this.machinePos;
     }
 
     public void markDirtyAndUpdate() {
