@@ -70,7 +70,7 @@ public class ModFluidRegistry {
         Fluid forgeFluid = new Fluid(name);
         FluidRegistry.registerFluid(forgeFluid);
 
-        LanguageRegistry.instance().addStringLocalization("fluid." + name, "en_US", fluidType.getLocalizedName());
+        LanguageRegistry.instance().addStringLocalization("fluid." + name, "en_US", fluidType.getName());
 
         CustomFluidBlock block = new CustomFluidBlock(forgeFluid, Material.water, name);
         GameRegistry.registerBlock(block, CustomFluidItemBlock.class, name + "_block");
