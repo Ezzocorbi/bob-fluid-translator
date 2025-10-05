@@ -15,6 +15,7 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
+import org.apache.commons.lang3.text.WordUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -70,7 +71,7 @@ public class ModFluidRegistry {
         Fluid forgeFluid = new Fluid(name);
         FluidRegistry.registerFluid(forgeFluid);
 
-        LanguageRegistry.instance().addStringLocalization("fluid." + name, "en_US", fluidType.getName());
+        LanguageRegistry.instance().addStringLocalization("fluid." + name, "en_US", WordUtils.capitalizeFully(fluidType.getName().replaceAll("_", " ")));
 
         CustomFluidBlock block = new CustomFluidBlock(forgeFluid, Material.water, name);
         GameRegistry.registerBlock(block, CustomFluidItemBlock.class, name + "_block");
@@ -87,6 +88,7 @@ public class ModFluidRegistry {
 
         return block;
     }
+
 
     /**
      * Returns the corresponding HBM fluid
