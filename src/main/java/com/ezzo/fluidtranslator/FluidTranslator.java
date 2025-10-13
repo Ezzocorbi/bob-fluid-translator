@@ -40,6 +40,8 @@ public class FluidTranslator
         ModFluidRegistry ft = new ModFluidRegistry();
         for(FluidType f : Fluids.getAll()) {
             if (ModFluidRegistry.isBlackListed(f)) continue;
+
+            // don't register a forge fluid if another mod already did it
             if (FluidRegistry.getFluid(f.getName().toLowerCase().replaceFirst("_fluid$", "")) != null) continue;
             ft.registerFluidType(f);
         }

@@ -5,6 +5,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.material.Material;
 import net.minecraft.util.IIcon;
+import net.minecraft.util.StatCollector;
 import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fluids.Fluid;
 
@@ -22,7 +23,7 @@ public class CustomFluidBlock extends BlockFluidClassic {
 
     @Override
     public String getLocalizedName() {
-        return ModFluidRegistry.getHBMFluid(fluid).getLocalizedName();
+        return StatCollector.translateToLocal(ModFluidRegistry.getHBMFluid(fluid).getUnlocalizedName());
     }
 
     @Override

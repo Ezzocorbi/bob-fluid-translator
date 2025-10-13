@@ -6,11 +6,14 @@ import com.ezzo.fluidtranslator.item.GenericBucket;
 import com.google.common.collect.HashBiMap;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.LanguageRegistry;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.Minecraft;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.StatCollector;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.FluidRegistry;
@@ -70,8 +73,8 @@ public class ModFluidRegistry {
         String name = fluidType.getName().toLowerCase();
         Fluid forgeFluid = new Fluid(name);
         FluidRegistry.registerFluid(forgeFluid);
-        
-        LanguageRegistry.instance().addStringLocalization("fluid." + name, "en_US", WordUtils.capitalizeFully(fluidType.getName().replaceAll("_", " ")));
+
+        LanguageRegistry.instance().addStringLocalization("fluid." + name, "en_US", StatCollector.translateToLocal(fluidType.getUnlocalizedName()));
 
         CustomFluidBlock block = new CustomFluidBlock(forgeFluid, Material.water, name);
         GameRegistry.registerBlock(block, CustomFluidItemBlock.class, name + "_block");
