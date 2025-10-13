@@ -36,11 +36,11 @@ public class FluidTranslator
         // Init network wrapper
         ModNetwork.init();
 
-        // Register HBM's fluids
+        // Register NTM's fluids
         ModFluidRegistry ft = new ModFluidRegistry();
         for(FluidType f : Fluids.getAll()) {
             if (ModFluidRegistry.isBlackListed(f)) continue;
-            if (FluidRegistry.getFluid(f.getName().toLowerCase() + "_fluid") != null) continue;
+            if (FluidRegistry.getFluid(f.getName().toLowerCase().replaceFirst("_fluid$", "")) != null) continue;
             ft.registerFluidType(f);
         }
 

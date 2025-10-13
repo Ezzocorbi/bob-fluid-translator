@@ -67,10 +67,10 @@ public class ModFluidRegistry {
      * @return Returns the fluid block associated to the ForgeFluid
      */
     public CustomFluidBlock registerFluidType(FluidType fluidType) {
-        String name = fluidType.getName().toLowerCase() + "_fluid";
+        String name = fluidType.getName().toLowerCase();
         Fluid forgeFluid = new Fluid(name);
         FluidRegistry.registerFluid(forgeFluid);
-
+        
         LanguageRegistry.instance().addStringLocalization("fluid." + name, "en_US", WordUtils.capitalizeFully(fluidType.getName().replaceAll("_", " ")));
 
         CustomFluidBlock block = new CustomFluidBlock(forgeFluid, Material.water, name);
@@ -99,9 +99,7 @@ public class ModFluidRegistry {
         FluidType result = lookUpTable.get(fluid);
         if (result != null) return result;
 
-        return Fluids.fromName(fluid.getName()
-                .replaceFirst("_fluid$", "") // remove "_fluid" at the end of the string
-                .toUpperCase());
+        return Fluids.fromName(fluid.getName().toUpperCase());
     }
 
     /**
@@ -112,7 +110,7 @@ public class ModFluidRegistry {
     public static Fluid getForgeFluid(FluidType fluidType) {
         Fluid result = lookUpTable.inverse().get(fluidType);
         if (result != null) return result;
-        return FluidRegistry.getFluid(fluidType.getName().toLowerCase() + "_fluid");
+        return FluidRegistry.getFluid(fluidType.getName().toLowerCase());
     }
 
     /**
