@@ -19,6 +19,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fluids.FluidRegistry;
 
 @Mod(modid = FluidTranslator.MODID, version = FluidTranslator.VERSION, dependencies = "required-after:hbm")
@@ -36,13 +37,20 @@ public class FluidTranslator
         // Init network wrapper
         ModNetwork.init();
 
-        // Register NTM's fluids
+        // Init config file
+        ModConfig.config = new Configuration(event.getSuggestedConfigurationFile());
+
+        // Register a Forge fluid for each NTM fluid
         ModFluidRegistry ft = new ModFluidRegistry();
         for(FluidType f : Fluids.getAll()) {
             if (ModFluidRegistry.isBlackListed(f)) continue;
 
-            // don't register a forge fluid if another mod already did it
-            if (FluidRegistry.getFluid(f.getName().toLowerCase().replaceFirst("_fluid$", "")) != null) continue;
+            // Don't register the forge fluid if it's already registered.
+            // This may be the case if a mapping was added manually.
+//            if (ModFluidRegistry.getForgeFluid(f) != null) continue;
+
+            // Don't register the forge fluid if another mod already did it
+            if (FluidRegistry.getFluid(f.getName().toLowerCase()) != null) continue;
             ft.registerFluidType(f);
         }
 

@@ -54,14 +54,10 @@ public class ModFluidRegistry {
 
     public ModFluidRegistry() {
         blackList.add(Fluids.NONE.getName());
-        blackList.add(Fluids.WATER.getName());
-        blackList.add(Fluids.LAVA.getName());
         blackList.add(Fluids.WATZ.getName());
         blackList.add("CUSTOM_DEMO");
 
         lookUpTable.put(FluidRegistry.getFluid("mud_fluid"), Fluids.WATZ);
-        lookUpTable.put(FluidRegistry.getFluid("water"), Fluids.WATER);
-        lookUpTable.put(FluidRegistry.getFluid("lava"), Fluids.LAVA);
     }
 
     /**
@@ -101,7 +97,6 @@ public class ModFluidRegistry {
     public static FluidType getHBMFluid(Fluid fluid) {
         FluidType result = lookUpTable.get(fluid);
         if (result != null) return result;
-
         return Fluids.fromName(fluid.getName().toUpperCase());
     }
 
@@ -123,5 +118,9 @@ public class ModFluidRegistry {
      */
     public static boolean isBlackListed(FluidType fluidType) {
         return blackList.contains(fluidType.getName());
+    }
+
+    public static HashBiMap<Fluid, FluidType> getLookupTable() {
+        return lookUpTable;
     }
 }
