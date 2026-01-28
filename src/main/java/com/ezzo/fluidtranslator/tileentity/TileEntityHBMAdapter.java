@@ -10,6 +10,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTank;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.TileEntityProxyCombo;
 import com.hbm.util.fauxpointtwelve.BlockPos;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
@@ -27,6 +28,7 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidHandler;
+import org.lwjgl.input.Mouse;
 
 public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, IInventory {
 
@@ -132,21 +134,27 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
      */
     public void onNeighborChanged(World world, Block neighbor) {
         if (machinePos == null) return;
-
         TileEntity newMachine = world.getTileEntity(machinePos.getX(), machinePos.getY(), machinePos.getZ());
          if (newMachine == null) {
-            this.fluidHandler = null;
-            setConnected(false);
-            markDirtyAndUpdate();
-        } else if (lastConnectedMachine == null || !lastConnectedMachine.equals(newMachine)) {
-             // if newly connected machine is different from last
-             boolean receiverFound = findAndConnectReceiver(machinePos);
-             boolean senderFound = findAndConnectSender(machinePos);
+             this.fluidHandler = null;
+             setConnected(false);
+             markDirtyAndUpdate();
+             return;
+         }
 
-             if (receiverFound || senderFound) {
-                 this.tankIndex = 0;
-                 markDirtyAndUpdate();
-             }
+        // if newly connected machine is different from last
+        // then look for the fluid receiver/sender of the new machine
+        if(newMachine instanceof TileEntityProxyCombo) {
+            TileEntity newMachineTE = ((TileEntityProxyCombo)newMachine).getTile();
+            if (!newMachineTE.equals(lastConnectedMachine)) {
+                boolean receiverFound = findAndConnectReceiver(machinePos);
+                boolean senderFound = findAndConnectSender(machinePos);
+
+                if (receiverFound || senderFound) {
+                    this.tankIndex = 0;
+                    markDirtyAndUpdate();
+                }
+            }
         }
     }
 

@@ -2,6 +2,7 @@
 .gradle/
 build/
 out/
+gradle.properties
 
 # Eclipse
 .classpath
