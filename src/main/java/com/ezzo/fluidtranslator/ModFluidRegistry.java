@@ -6,11 +6,9 @@ import com.ezzo.fluidtranslator.item.GenericBucket;
 import com.google.common.collect.HashBiMap;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.LanguageRegistry;
 import net.minecraft.block.material.Material;
-import net.minecraft.client.Minecraft;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.StatCollector;
@@ -18,10 +16,8 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
-import org.apache.commons.lang3.text.WordUtils;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * This class manages the registration and translation of fluids from the HBM mod
@@ -43,21 +39,10 @@ import java.util.Set;
  */
 public class ModFluidRegistry {
 
-    /** This list contains fluids that shouldn't get a translation.
-     * It's used by other classes to check if a fluid has a translation handled by
-     * this registry.
-     */
-    private static final Set<String> blackList = new HashSet<String>();
-
-    // This look up table is used to match fluids that don't follow the naming convention
-    private static final HashBiMap<Fluid, FluidType> lookUpTable = HashBiMap.create();
+    private static final HashBiMap<FluidType, Fluid> customMappings = HashBiMap.create();
 
     public ModFluidRegistry() {
-        blackList.add(Fluids.NONE.getName());
-        blackList.add(Fluids.WATZ.getName());
-        blackList.add("CUSTOM_DEMO");
 
-        lookUpTable.put(FluidRegistry.getFluid("mud_fluid"), Fluids.WATZ);
     }
 
     /**
@@ -95,7 +80,7 @@ public class ModFluidRegistry {
      * @return returns null if there is no correspondence
      */
     public static FluidType getHBMFluid(Fluid fluid) {
-        FluidType result = lookUpTable.get(fluid);
+        FluidType result = customMappings.inverse().get(fluid);
         if (result != null) return result;
         return Fluids.fromName(fluid.getName().toUpperCase());
     }
@@ -106,7 +91,7 @@ public class ModFluidRegistry {
      * @return returns null if there is no correspondence (like for black-listed fluids)
      */
     public static Fluid getForgeFluid(FluidType fluidType) {
-        Fluid result = lookUpTable.inverse().get(fluidType);
+        Fluid result = customMappings.get(fluidType);
         if (result != null) return result;
         return FluidRegistry.getFluid(fluidType.getName().toLowerCase());
     }
@@ -117,10 +102,37 @@ public class ModFluidRegistry {
      * @return Returns true if the fluid should not be registered
      */
     public static boolean isBlackListed(FluidType fluidType) {
-        return blackList.contains(fluidType.getName());
+        return ModConfig.fluidBlacklist.contains(fluidType.getName());
     }
 
-    public static HashBiMap<Fluid, FluidType> getLookupTable() {
-        return lookUpTable;
+    /**
+     * Registers custom fluid mappings between NTM fluid types and Forge fluid instances.
+     * <p>
+     * This method takes a {@link Map} and resolves the fluid objects on both sides:
+     * <ul>
+     *   <li><b>Key</b>: NTM fluid name</li>
+     *   <li><b>Value</b>: Forge fluid name</li>
+     * </ul>
+     * <p>
+     * Each entry is validated to ensure both the NTM fluid and Forge fluid exist.
+     * If any mapping refers to an unknown fluid, a {@link RuntimeException} is thrown.
+     * <p>
+     * Successfully resolved pairs are stored in the {@code customMappings} map,
+     * linking NTM {@link FluidType} objects to Forge {@link Fluid} objects.
+     *
+     * @param mappings a {@link Map} where each key is an NTM fluid name and each value is the corresponding Forge fluid name
+     * @throws RuntimeException if either the NTM fluid or the Forge fluid cannot be found
+     */
+    public static void setCustomMappings(Map<String, String> mappings) {
+        mappings.keySet().forEach(fluidTypeName -> {
+            String forgeFluidName = mappings.get(fluidTypeName);
+
+            FluidType fluidType = Fluids.fromName(fluidTypeName);
+            Fluid forgeFluid = FluidRegistry.getFluid(forgeFluidName);
+            if (fluidType == null || fluidType.getID() == Fluids.NONE.getID()) throw new RuntimeException("Cannot find NTM fluid '" + fluidTypeName + "' defined in custom mappings.");
+            if (forgeFluid == null) throw new RuntimeException("Cannot find Forge fluid '" + forgeFluidName + "' defined in custom mappings.");
+
+            customMappings.put(fluidType, forgeFluid);
+        });
     }
 }

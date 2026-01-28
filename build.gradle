@@ -21,7 +21,7 @@ buildscript {
 
 apply plugin: 'forge'
 
-version = "1.0.4"
+version = "1.0.5"
 group= "com.ezzo.bobfluidtranslator" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "bobfluidtranslator"
 
@@ -58,8 +58,8 @@ dependencies {
     // or you may define them like so..
     //compile "some.group:artifact:version:classifier"
     //compile "some.group:artifact:version"
-    compile files("libs/HBM-NTM-[1.0.27_X5454].jar")
-    compileOnly files("libs/HBM-NTM-[1.0.27_X5454]-sources.jar")
+    compile files("libs/HBM-NTM-.1.0.27_X5572.jar")
+    compileOnly files("libs/HBM-NTM-[1.0.27_X5572]-sources.jar")
 
     implementation "li.cil.oc:OpenComputers:MC1.7.10-1.5.+:api"
 
@@ -125,4 +125,9 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 artifacts {
     archives sourcesJar
     archives javadocJar
+}
+
+tasks.withType(JavaCompile) {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }

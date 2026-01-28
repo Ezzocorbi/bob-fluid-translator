@@ -39,6 +39,7 @@ public class FluidTranslator
 
         // Init config file
         ModConfig.config = new Configuration(event.getSuggestedConfigurationFile());
+        ModConfig.syncConfig();
 
         // Register a Forge fluid for each NTM fluid
         ModFluidRegistry ft = new ModFluidRegistry();
@@ -47,9 +48,10 @@ public class FluidTranslator
 
             // Don't register the forge fluid if it's already registered.
             // This may be the case if a mapping was added manually.
-//            if (ModFluidRegistry.getForgeFluid(f) != null) continue;
+            if (ModFluidRegistry.getForgeFluid(f) != null) continue;
 
             // Don't register the forge fluid if another mod already did it
+            // This doesn't always work because other mods might get loaded after this one
             if (FluidRegistry.getFluid(f.getName().toLowerCase()) != null) continue;
             ft.registerFluidType(f);
         }
