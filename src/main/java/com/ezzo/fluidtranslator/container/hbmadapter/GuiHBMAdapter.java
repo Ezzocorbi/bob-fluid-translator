@@ -125,7 +125,7 @@ public class GuiHBMAdapter extends GuiInfoContainer {
             }
             drawTankInfo(info, mouseX, mouseY);
         } catch (IllegalArgumentException e) {
-            drawTankInfo(new String[] {"Error: unable to render fluid:"}, mouseX, mouseY);
+            drawTankInfo(new String[] {"Error: unable to display fluid"}, mouseX, mouseY);
             System.err.println(String.format("An error occurred while trying to render the fluid in the adapter at %d %d %d", tank.xCoord, tank.yCoord, tank.zCoord));
             e.printStackTrace();
         }

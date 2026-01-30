@@ -21,23 +21,25 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fluids.FluidRegistry;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Mod(modid = FluidTranslator.MODID, version = FluidTranslator.VERSION, dependencies = "required-after:hbm")
 public class FluidTranslator
 {
     public static final String MODID = "bobfluidtranslator";
-    public static final String VERSION = "1.0.0";
+    public static final String VERSION = "2.0.0";
 
     @Mod.Instance(FluidTranslator.MODID)
     public static FluidTranslator instance;
 
+    public static Logger logger = LogManager.getLogger(MODID);
+
     @EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
-        // Init network wrapper
         ModNetwork.init();
 
-        // Init config file
         ModConfig.config = new Configuration(event.getSuggestedConfigurationFile());
         ModConfig.syncConfig();
 
@@ -56,18 +58,14 @@ public class FluidTranslator
             ft.registerFluidType(f);
         }
 
-        // Init blocks
         ModBlocks.initBlocks();
 
-        // Register blocks
         GameRegistry.registerBlock(ModBlocks.universalTank, UniversalTankItemBlock.class, "universalTank");
         GameRegistry.registerBlock(ModBlocks.universalTankLarge, UniversalTankItemBlock.class, "universalTankLarge");
         GameRegistry.registerBlock(ModBlocks.hbmAdapter, HBMAdapterItemBlock.class, "ntmAdapter");
 
-        // Register tile entities
         GameRegistry.registerTileEntity(TileEntityUniversalTank.class, "teUniversalTank");
         GameRegistry.registerTileEntity(TileEntityHBMAdapter.class, "teNTMAdapter");
-
     }
 
     @EventHandler

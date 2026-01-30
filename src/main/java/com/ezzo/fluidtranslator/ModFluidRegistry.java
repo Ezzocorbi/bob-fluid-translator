@@ -9,6 +9,7 @@ import com.hbm.inventory.fluid.Fluids;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.LanguageRegistry;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.Minecraft;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.StatCollector;
@@ -17,7 +18,12 @@ import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * This class manages the registration and translation of fluids from the HBM mod
@@ -39,8 +45,6 @@ import java.util.Map;
  */
 public class ModFluidRegistry {
 
-    private static final HashBiMap<FluidType, Fluid> customMappings = HashBiMap.create();
-
     public ModFluidRegistry() {
 
     }
@@ -51,7 +55,10 @@ public class ModFluidRegistry {
      * @return Returns the fluid block associated to the ForgeFluid
      */
     public CustomFluidBlock registerFluidType(FluidType fluidType) {
-        String name = fluidType.getName().toLowerCase();
+        String name = ModConfig.customMappings.getOrDefault(
+                fluidType.getName(),
+                fluidType.getName().toLowerCase());
+
         Fluid forgeFluid = new Fluid(name);
         FluidRegistry.registerFluid(forgeFluid);
 
@@ -77,12 +84,13 @@ public class ModFluidRegistry {
     /**
      * Returns the corresponding HBM fluid
      * @param fluid Forge fluid
-     * @return returns null if there is no correspondence
+     * @return returns NONE {@link FluidType} if there is no correspondence
      */
     public static FluidType getHBMFluid(Fluid fluid) {
-        FluidType result = customMappings.inverse().get(fluid);
-        if (result != null) return result;
-        return Fluids.fromName(fluid.getName().toUpperCase());
+        String fluidName = ModConfig.customMappings.inverse().getOrDefault(
+                fluid.getName(),
+                fluid.getName().toUpperCase());
+        return Fluids.fromName(fluidName);
     }
 
     /**
@@ -91,9 +99,11 @@ public class ModFluidRegistry {
      * @return returns null if there is no correspondence (like for black-listed fluids)
      */
     public static Fluid getForgeFluid(FluidType fluidType) {
-        Fluid result = customMappings.get(fluidType);
-        if (result != null) return result;
-        return FluidRegistry.getFluid(fluidType.getName().toLowerCase());
+        String fluidName = ModConfig.customMappings.getOrDefault(
+                fluidType.getName(),
+                fluidType.getName().toLowerCase()
+        );
+        return FluidRegistry.getFluid(fluidName);
     }
 
     /**
@@ -106,33 +116,33 @@ public class ModFluidRegistry {
     }
 
     /**
-     * Registers custom fluid mappings between NTM fluid types and Forge fluid instances.
-     * <p>
-     * This method takes a {@link Map} and resolves the fluid objects on both sides:
-     * <ul>
-     *   <li><b>Key</b>: NTM fluid name</li>
-     *   <li><b>Value</b>: Forge fluid name</li>
-     * </ul>
-     * <p>
-     * Each entry is validated to ensure both the NTM fluid and Forge fluid exist.
-     * If any mapping refers to an unknown fluid, a {@link RuntimeException} is thrown.
-     * <p>
-     * Successfully resolved pairs are stored in the {@code customMappings} map,
-     * linking NTM {@link FluidType} objects to Forge {@link Fluid} objects.
+     * Returns all registered {@link FluidType}s that are not blacklisted.
      *
-     * @param mappings a {@link Map} where each key is an NTM fluid name and each value is the corresponding Forge fluid name
-     * @throws RuntimeException if either the NTM fluid or the Forge fluid cannot be found
+     * @return an {@link Iterable} of valid, non-blacklisted {@link FluidType}s
      */
-    public static void setCustomMappings(Map<String, String> mappings) {
-        mappings.keySet().forEach(fluidTypeName -> {
-            String forgeFluidName = mappings.get(fluidTypeName);
+    public static Iterable<FluidType> validFluids() {
+        List<FluidType> result = new ArrayList<>();
 
-            FluidType fluidType = Fluids.fromName(fluidTypeName);
-            Fluid forgeFluid = FluidRegistry.getFluid(forgeFluidName);
-            if (fluidType == null || fluidType.getID() == Fluids.NONE.getID()) throw new RuntimeException("Cannot find NTM fluid '" + fluidTypeName + "' defined in custom mappings.");
-            if (forgeFluid == null) throw new RuntimeException("Cannot find Forge fluid '" + forgeFluidName + "' defined in custom mappings.");
+        Arrays.stream(Fluids.getAll())
+                .filter(f -> !ModFluidRegistry.isBlackListed(f))
+                .forEach(result::add);
 
-            customMappings.put(fluidType, forgeFluid);
-        });
+        return result;
+    }
+
+    /**
+     *
+     * @param fluid Fluid to check
+     * @return True if a texture exists for the fluid {@code fluid}, false otherwise
+     */
+    public static boolean textureExists(FluidType fluid) {
+        try {
+            Minecraft.getMinecraft()
+                    .getResourceManager()
+                    .getResource(fluid.getTexture());
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 }

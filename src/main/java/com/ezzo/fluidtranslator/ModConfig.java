@@ -1,11 +1,11 @@
 package com.ezzo.fluidtranslator;
 
+
+import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
+
 
 import java.util.*;
 
@@ -13,16 +13,15 @@ public class ModConfig {
 
     public static Configuration config;
 
-    /** This list contains fluids that shouldn't get a translation.
-     * It's used by other classes to check if a fluid has a translation handled by
-     * this registry.
+    /** This list contains NTM fluids for which we should
+     * not register a Forge fluid.
      */
     public static Set<String> fluidBlacklist;
 
-    public static Map<String, String> customMappings;
+    public static BiMap<String, String> customMappings;
 
     /**
-     * Loads configs from file and sets their values in game
+     * Loads configs from file and sets their values in game.
      * Finally, saves the configs if they have changed.
      */
     public static void syncConfig() {
@@ -31,23 +30,24 @@ public class ModConfig {
         String[] blacklist = config.getStringList("fluidBlacklist",
                 "conversion",
                 new String[] {
-                        Fluids.NONE.getName(), Fluids.WATZ.getName(), "CUSTOM_DEMO"
+                        Fluids.NONE.getName(), "CUSTOM_DEMO"
                 },
-                "Fluids from NTM that should not be translated to Forge fluids.\n" +
+                "Fluids in the blacklist do not receive an automatic mapping.\n" +
                         "For more info visit https://github.com/Ezzocorbi/bob-fluid-translator/wiki/Configs\n");
         fluidBlacklist = new HashSet<String>(Arrays.asList(blacklist));
 
         String[] stringMappings = config.getStringList(
                 "mappings",
                 "conversion",
-                new String[0],
-                "Custom mappings.\n" +
+                new String[] {
+                        "WATZ=mud_fluid"
+                },
+                "Overrides the automatic mapping by defining custom NTM to Forge fluid associations.\n" +
+                        "These take precedence over automatic mapping.\n" +
                         "For more info visit https://github.com/Ezzocorbi/bob-fluid-translator/wiki/Configs\n"
         );
 
         customMappings = parseMappings(stringMappings);
-//        mappings.keySet().forEach(k -> System.out.println(k.getName() + " - " + mappings.get(k).getName())); // TODO Remove this log
-
         if (config.hasChanged()) config.save();
     }
 
@@ -56,11 +56,11 @@ public class ModConfig {
      * <p>
      * Each element of the {@code mappings} array must be in the format:
      * <pre>
-     * "NTM Fluid Name - Forge Fluid Name"
+     * "NTM Fluid Name=Forge Fluid Name"
      * </pre>
      * For example:
      * <pre>
-     * {"WATER - water", "HELIUM - helium"}
+     * {"WATER=water", "HELIUM=helium"}
      * </pre>
      * would produce a map where:
      * <ul>
@@ -69,20 +69,20 @@ public class ModConfig {
      * </ul>
      * <p>
      * The method performs basic validation and will throw an exception if any entry does not match
-     * the expected format (i.e. if it doesn't split into exactly two parts separated by {@code " - "}).
+     * the expected format (i.e. if it doesn't split into exactly two parts separated by {@code "="}).
      *
-     * @param mappings an array of strings representing fluid name mappings in the format
-     *                 {@code "NTM Fluid - Forge Fluid"}
+     * @param raw an array of strings representing fluid name mappings in the format
+     *                 {@code "NTM Fluid=Forge Fluid"}
      * @return a {@link Map} where the key is the NTM fluid name and the value is the Forge fluid name
      * @throws RuntimeException if any mapping string is invalid or malformed
      */
-    private static Map<String, String> parseMappings(String[] mappings) {
-        Map<String, String> result = new HashMap<>();
-        for(String mapping: mappings) {
-            String[] fluids = mapping.split(" - ");
-            if (fluids.length != 2) throw new RuntimeException("Invalid mapping found in config: " + mapping);
-            result.put(fluids[0], fluids[1]);
+    private static BiMap<String, String> parseMappings(String[] raw) {
+        BiMap<String, String> customMappings = HashBiMap.create();
+        for(String s: raw) {
+            String[] parts = s.split("=", 2);
+            if (parts.length != 2) throw new RuntimeException("Invalid mapping in config: " + s);
+            customMappings.put(parts[0].trim(), parts[1].trim());
         }
-        return result;
+        return customMappings;
     }
 }

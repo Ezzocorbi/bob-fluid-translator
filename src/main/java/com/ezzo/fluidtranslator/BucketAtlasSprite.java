@@ -4,13 +4,11 @@ import com.hbm.inventory.fluid.FluidType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ResourceLocation;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.Arrays;
 
 public class BucketAtlasSprite extends TextureAtlasSprite {
 
@@ -39,17 +37,13 @@ public class BucketAtlasSprite extends TextureAtlasSprite {
             BufferedImage bucketBuf = ImageIO.read(Minecraft.getMinecraft().getResourceManager().getResource(bucketLoc).getInputStream());
             BufferedImage fluidBuf = ImageIO.read(Minecraft.getMinecraft().getResourceManager().getResource(fluidTexture).getInputStream());
 
-//            File imgfile = new File("~/Desktop/image.png");
-//            ImageIO.write(bucketBuf, "png", imgfile);
-//            assert imgfile.length() > 0;
-
             int[] rawBucket = new int[bucketBuf.getWidth()*bucketBuf.getHeight()];
             int[] rawFluid = new int[fluidBuf.getWidth()*fluidBuf.getHeight()];
 
             bucketBuf.getRGB(0, 0, bucketBuf.getWidth(), bucketBuf.getHeight(), rawBucket, 0, bucketBuf.getWidth());
             fluidBuf.getRGB(0, 0, fluidBuf.getWidth(), fluidBuf.getHeight(), rawFluid, 0, fluidBuf.getWidth());
 
-            int fluidTint = getAverageRGBColor(rawFluid);
+            int fluidTint = fluid.getColor();
 
             // Take specific pixels in the bucket's texture and tint them to resemble the fluid
             for (int i = 53; i < 58 + 1; i++) {
@@ -77,16 +71,17 @@ public class BucketAtlasSprite extends TextureAtlasSprite {
 
             int size = (int)(1 + Math.log10(bucketBuf.getWidth()) / Math.log10(2));
             int[][] mipmaps = new int[size][];
-            Arrays.fill(mipmaps, rawBucket);
+            for (int i = 0; i < size; i++) {
+                mipmaps[i] = rawBucket;
+            }
 
             this.setIconHeight(bucketBuf.getHeight());
             this.setIconWidth(bucketBuf.getWidth());
             this.framesTextureData.add(mipmaps);
             return false;
         } catch (IOException e) {
-            String errorMsg = "Fatal error: Unable to load texture " + location.getResourceDomain() + ":" + location.getResourcePath();
-            System.err.println(errorMsg);
-            Minecraft.getMinecraft().crashed(new CrashReport(errorMsg, e));
+            String errorMsg = "Error: Unable to load texture " + location.getResourceDomain() + ":" + location.getResourcePath();
+            FluidTranslator.logger.error(errorMsg);
             return false;
         }
     }
@@ -105,26 +100,6 @@ public class BucketAtlasSprite extends TextureAtlasSprite {
         g = g * tg / 255;
         b = b * tb / 255;
         return (a << 24) | (r << 16) | (g << 8) | b;
-    }
-
-    private int getAverageRGBColor(int[] image) {
-        long sumR = 0, sumG = 0, sumB = 0;
-        int count = image.length;
-
-        for (int rgb : image) {
-            int r = (rgb >> 16) & 0xFF;
-            int g = (rgb >> 8) & 0xFF;
-            int b = rgb & 0xFF;
-            sumR += r;
-            sumG += g;
-            sumB += b;
-        }
-
-        int avgR = (int)(sumR / count);
-        int avgG = (int)(sumG / count);
-        int avgB = (int)(sumB / count);
-
-        return (avgR << 16) | (avgG << 8) | avgB;
     }
 
     private String getTextureForFluid(FluidType fluid) {
