@@ -3,7 +3,6 @@ package com.ezzo.fluidtranslator;
 import com.ezzo.fluidtranslator.blocks.CustomFluidBlock;
 import com.ezzo.fluidtranslator.item.CustomFluidItemBlock;
 import com.ezzo.fluidtranslator.item.GenericBucket;
-import com.google.common.collect.HashBiMap;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -22,8 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * This class manages the registration and translation of fluids from the HBM mod
@@ -57,7 +54,7 @@ public class ModFluidRegistry {
     public CustomFluidBlock registerFluidType(FluidType fluidType) {
         String name = ModConfig.customMappings.getOrDefault(
                 fluidType.getName(),
-                fluidType.getName().toLowerCase());
+                fluidType.getName().toLowerCase() + ModConfig.suffix);
 
         Fluid forgeFluid = new Fluid(name);
         FluidRegistry.registerFluid(forgeFluid);
@@ -89,7 +86,9 @@ public class ModFluidRegistry {
     public static FluidType getHBMFluid(Fluid fluid) {
         String fluidName = ModConfig.customMappings.inverse().getOrDefault(
                 fluid.getName(),
-                fluid.getName().toUpperCase());
+                fluid.getName()
+                        .replaceFirst(ModConfig.suffix + "$", "")
+                        .toUpperCase());
         return Fluids.fromName(fluidName);
     }
 
@@ -101,7 +100,7 @@ public class ModFluidRegistry {
     public static Fluid getForgeFluid(FluidType fluidType) {
         String fluidName = ModConfig.customMappings.getOrDefault(
                 fluidType.getName(),
-                fluidType.getName().toLowerCase()
+                fluidType.getName().toLowerCase() + ModConfig.suffix
         );
         return FluidRegistry.getFluid(fluidName);
     }

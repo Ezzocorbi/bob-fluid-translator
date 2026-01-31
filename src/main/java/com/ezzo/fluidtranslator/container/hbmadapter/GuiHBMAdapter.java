@@ -80,11 +80,6 @@ public class GuiHBMAdapter extends GuiInfoContainer {
     }
 
     @Override
-    protected void drawGuiContainerForegroundLayer(int x, int y) {
-
-    }
-
-    @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         mc.getTextureManager().bindTexture(texture);
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
@@ -114,7 +109,7 @@ public class GuiHBMAdapter extends GuiInfoContainer {
             }
 
             String[] info;
-            FluidTank hbmTank = tank.getInternalTank();
+            FluidTank hbmTank = tank.getActiveTank();
             if (hbmTank == null) {
                 info = new String[] {"No tank attached"};
             } else {
@@ -126,7 +121,10 @@ public class GuiHBMAdapter extends GuiInfoContainer {
             drawTankInfo(info, mouseX, mouseY);
         } catch (IllegalArgumentException e) {
             drawTankInfo(new String[] {"Error: unable to display fluid"}, mouseX, mouseY);
-            System.err.println(String.format("An error occurred while trying to render the fluid in the adapter at %d %d %d", tank.xCoord, tank.yCoord, tank.zCoord));
+            FluidTranslator.logger.error(
+                    "An error occurred while trying to render the fluid in the adapter at {} {} {}%n",
+                    tank.xCoord, tank.yCoord, tank.zCoord
+            );
             e.printStackTrace();
         }
 

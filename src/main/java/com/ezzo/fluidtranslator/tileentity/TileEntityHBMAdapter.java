@@ -4,6 +4,7 @@ import api.hbm.fluidmk2.IFluidStandardReceiverMK2;
 import api.hbm.fluidmk2.IFluidStandardSenderMK2;
 import api.hbm.fluidmk2.IFluidStandardTransceiverMK2;
 import com.ezzo.fluidtranslator.FluidHandler;
+import com.ezzo.fluidtranslator.FluidTranslator;
 import com.ezzo.fluidtranslator.ModFluidRegistry;
 import com.ezzo.fluidtranslator.adapter.UnifiedFluidStack;
 import com.hbm.inventory.fluid.FluidType;
@@ -28,7 +29,6 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidHandler;
-import org.lwjgl.input.Mouse;
 
 public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, IInventory {
 
@@ -335,7 +335,8 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         if (!isConnected()) return null;
         if (maxDrain <= 0) return null;
 
-        FluidTank tank = fluidHandler.getAllTanks()[tankIndex];
+        FluidTank tank = getActiveTank();
+        if (tank == null) return null; // compare against old code (github)
         if (tank.getFill() <= 0) return null;
 
         int drained = Math.min(maxDrain, tank.getFill());
@@ -354,7 +355,8 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     @Override
     public boolean canFill(ForgeDirection from, Fluid fluid) {
         if (!isConnected()) return false;
-        FluidTank tank = fluidHandler.getAllTanks()[tankIndex];
+        FluidTank tank = getActiveTank();
+        if (tank == null) return false;
         FluidType incomingFluid = ModFluidRegistry.getHBMFluid(fluid);
         FluidType storedFluid = tank.getTankType();
 
@@ -369,7 +371,8 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
     public boolean canDrain(ForgeDirection from, Fluid fluid) {
         if (!isConnected()) return false;
         if (fluid == null) return false;
-        FluidTank tank = fluidHandler.getAllTanks()[tankIndex];
+        FluidTank tank = getActiveTank();
+        if (tank == null) return false;
         return tank.getTankType().getID() == ModFluidRegistry.getHBMFluid(fluid).getID();
     }
 
@@ -378,22 +381,37 @@ public class TileEntityHBMAdapter extends TileEntity implements IFluidHandler, I
         if (!isConnected())
             return new FluidTankInfo[] {new FluidTankInfo(null, 0)};
 
-        FluidTank tank = fluidHandler.getAllTanks()[tankIndex];
+        FluidTank tank = getActiveTank();
+        if (tank == null)
+            return new FluidTankInfo[] {new FluidTankInfo(null, 0)};
         UnifiedFluidStack fluidStack = UnifiedFluidStack.fromHBM(tank.getTankType(), tank.getFill());
-        if (fluidStack.isEmpty()) {
-            return new FluidTankInfo[]{ new FluidTankInfo(null, tank.getMaxFill()) };
-        } else {
-            return new FluidTankInfo[]{ new FluidTankInfo(fluidStack.toForge(), tank.getMaxFill()) };
-        }
+
+        return
+            fluidStack.isEmpty()
+                ? new FluidTankInfo[]{ new FluidTankInfo(null, tank.getMaxFill()) }
+                : new FluidTankInfo[]{ new FluidTankInfo(fluidStack.toForge(), tank.getMaxFill()) };
     }
 
     /**
-     * @return Returns the selected thank of the connected machine.
-     * Returns null if the adapter is not connected.
+     * @return Returns the selected tank of the connected machine.
+     * Returns null if the adapter is not connected or if an
+     * invalid tank is selected.
      */
-    public FluidTank getInternalTank() {
+    public FluidTank getActiveTank() {
         if (!isConnected()) return null;
-        return fluidHandler.getAllTanks()[tankIndex];
+
+        FluidTank[] tanks = fluidHandler.getAllTanks();
+        if (tanks == null || tanks.length == 0) return null;
+
+        if (tankIndex < 0 || tankIndex >= tanks.length) {
+            FluidTranslator.logger.error(
+                    "Adapter at {} {} {} tried to access tank index {} (available: {})",
+                    xCoord, yCoord, zCoord, tankIndex, tanks.length
+            );
+            return null;
+        }
+
+        return tanks[tankIndex];
     }
 
     @Override

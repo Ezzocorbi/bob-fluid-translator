@@ -20,6 +20,8 @@ public class ModConfig {
 
     public static BiMap<String, String> customMappings;
 
+    public static String suffix;
+
     /**
      * Loads configs from file and sets their values in game.
      * Finally, saves the configs if they have changed.
@@ -34,20 +36,30 @@ public class ModConfig {
                 },
                 "Fluids in the blacklist do not receive an automatic mapping.\n" +
                         "For more info visit https://github.com/Ezzocorbi/bob-fluid-translator/wiki/Configs\n");
-        fluidBlacklist = new HashSet<String>(Arrays.asList(blacklist));
+        ModConfig.fluidBlacklist = new HashSet<String>(Arrays.asList(blacklist));
 
         String[] stringMappings = config.getStringList(
                 "mappings",
                 "conversion",
                 new String[] {
-                        "WATZ=mud_fluid"
+                        "WATZ=mud_fluid", "WATER=water", "LAVA=lava"
                 },
                 "Overrides the automatic mapping by defining custom NTM to Forge fluid associations.\n" +
                         "These take precedence over automatic mapping.\n" +
                         "For more info visit https://github.com/Ezzocorbi/bob-fluid-translator/wiki/Configs\n"
         );
+        ModConfig.customMappings = parseMappings(stringMappings);
 
-        customMappings = parseMappings(stringMappings);
+        ModConfig.suffix = config.getString(
+                "suffix",
+                "conversion",
+                "_fluid",
+                "Suffix used for automatically generated Forge fluid IDs.\n" +
+                        "Set to empty string for better compatibility with other mods.\n" +
+                        "Default value \"_fluid\" is kept for backward compatibility with\n" +
+                        "older versions of this mod, to avoid breaking existing worlds."
+        );
+
         if (config.hasChanged()) config.save();
     }
 

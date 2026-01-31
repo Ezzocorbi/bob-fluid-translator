@@ -2,13 +2,11 @@ package com.ezzo.fluidtranslator;
 
 import com.ezzo.fluidtranslator.blocks.CustomFluidBlock;
 import com.ezzo.fluidtranslator.item.GenericBucket;
-import com.typesafe.config.ConfigException;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.fluids.Fluid;
 
