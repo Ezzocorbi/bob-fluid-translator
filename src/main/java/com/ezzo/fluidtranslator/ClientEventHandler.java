@@ -3,17 +3,14 @@ package com.ezzo.fluidtranslator;
 import com.ezzo.fluidtranslator.blocks.CustomFluidBlock;
 import com.ezzo.fluidtranslator.item.GenericBucket;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.fluids.Fluid;
 
 
-public class ModEventHandler {
+public class ClientEventHandler {
 
-    @SideOnly(Side.CLIENT)
     @SubscribeEvent
     public void onTextureStitch(TextureStitchEvent.Pre event) {
         switch (event.map.getTextureType()) {
@@ -28,7 +25,6 @@ public class ModEventHandler {
     }
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
     public void onTextureStitchPost(TextureStitchEvent.Post event) {
 
         switch (event.map.getTextureType()) {
@@ -65,6 +61,7 @@ public class ModEventHandler {
         });
     }
 
+
     private void applyFluidBlockSprites(TextureStitchEvent.Post event) {
         ModFluidRegistry.validFluids().forEach(f -> {
             String spriteName = FluidTranslator.MODID + ":" + f.getName().toLowerCase() + "_texture";
@@ -83,9 +80,9 @@ public class ModEventHandler {
     private void applyItemSprites(TextureStitchEvent.Post event) {
         ModFluidRegistry.validFluids().forEach(f -> {
             String spriteName =
-                ModFluidRegistry.textureExists(f)
-                    ? FluidTranslator.MODID + ":" + f.getName().toLowerCase() + "_bucket"
-                    : FluidTranslator.MODID + ":missingno_bucket";
+                    ModFluidRegistry.textureExists(f)
+                            ? FluidTranslator.MODID + ":" + f.getName().toLowerCase() + "_bucket"
+                            : FluidTranslator.MODID + ":missingno_bucket";
 
             TextureAtlasSprite sprite = event.map.getAtlasSprite(spriteName);
 

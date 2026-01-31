@@ -12,6 +12,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModItems;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
+import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
@@ -29,6 +30,13 @@ public class FluidTranslator
 {
     public static final String MODID = "bobfluidtranslator";
     public static final String VERSION = "2.0.0";
+
+    @SidedProxy(
+            clientSide = "com.ezzo.fluidtranslator.ClientProxy",
+            serverSide = "com.ezzo.fluidtranslator.CommonProxy"
+    )
+
+    public static CommonProxy proxy;
 
     @Mod.Instance(FluidTranslator.MODID)
     public static FluidTranslator instance;
@@ -72,7 +80,8 @@ public class FluidTranslator
     public void init(FMLInitializationEvent event)
     {
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
-        MinecraftForge.EVENT_BUS.register(new ModEventHandler());
+        proxy.registerEvents();
+//        proxy.registerRenders();
         addRecipes();
     }
 
