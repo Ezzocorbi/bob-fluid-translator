@@ -17,7 +17,7 @@ public class CustomFluidItemBlock extends ItemBlock {
     @Override
     public String getItemStackDisplayName(ItemStack stack) {
         if (this.field_150939_a instanceof CustomFluidBlock) {
-            return ((CustomFluidBlock)field_150939_a).getLocalizedName();
+            return ((CustomFluidBlock) field_150939_a).getLocalizedName();
         } else {
             return super.getItemStackDisplayName(stack);
         }

@@ -31,13 +31,19 @@ public class FluidAtlasSprite extends TextureAtlasSprite {
             this.frameCounter = 0;
             this.tickCounter = 0;
 
-            ResourceLocation loc = new ResourceLocation(getTextureForFluid(this.fluid));
+            ResourceLocation loc = fluid.getTexture();
             BufferedImage texImg = ImageIO.read(Minecraft.getMinecraft().getResourceManager().getResource(loc).getInputStream());
             int[] buffer = new int[texImg.getHeight() * texImg.getWidth()];
+            texImg.getRGB(0, 0, texImg.getWidth(), texImg.getHeight(), buffer, 0, texImg.getWidth());
+
+            // Apply fluid tint (custom fluids have a tint)
+            int fluidTint = fluid.getTint();
+            for (int i = 0; i < buffer.length; i++) {
+                buffer[i] = multiplyRGB(buffer[i], fluidTint);
+            }
 
             int size = (int)(1 + Math.log10(texImg.getWidth()) / Math.log10(2)); // this equals to 1 + log base 2 of texImg.getWidth()
             int[][] mipmaps = new int[size][];
-            texImg.getRGB(0, 0, texImg.getWidth(), texImg.getHeight(), buffer, 0, texImg.getWidth());
             for (int i = 0; i < size; i++) {
                 mipmaps[i] = buffer;
             }
@@ -53,7 +59,19 @@ public class FluidAtlasSprite extends TextureAtlasSprite {
         }
     }
 
-    private String getTextureForFluid(FluidType fluid) {
-        return "hbm:textures/gui/fluids/" + fluid.getName().toLowerCase() + ".png";
+    private int multiplyRGB(int rgb, int tint) {
+        int tr = (tint >> 16) & 0xFF;
+        int tg = (tint >> 8) & 0xFF;
+        int tb = tint & 0xFF;
+
+        int r = (rgb >> 16) & 0xFF;
+        int g = (rgb >> 8) & 0xFF;
+        int b = rgb & 0xFF;
+        int a = (rgb >> 24) & 0xFF;
+
+        r = r * tr / 255;
+        g = g * tg / 255;
+        b = b * tb / 255;
+        return (a << 24) | (r << 16) | (g << 8) | b;
     }
 }

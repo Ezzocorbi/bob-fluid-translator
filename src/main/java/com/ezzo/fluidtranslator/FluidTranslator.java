@@ -18,7 +18,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;    
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fluids.FluidRegistry;
 import org.apache.logging.log4j.LogManager;
@@ -64,6 +64,7 @@ public class FluidTranslator
             if (FluidRegistry.getFluid(f.getName().toLowerCase()) != null) continue;
             ft.registerFluidType(f);
         }
+        proxy.registerTanslations();
 
         ModBlocks.initBlocks();
 
@@ -80,7 +81,6 @@ public class FluidTranslator
     {
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
         proxy.registerEvents();
-//        proxy.registerRenders();
         addRecipes();
     }
 

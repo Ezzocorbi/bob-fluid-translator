@@ -32,7 +32,7 @@ public class BucketAtlasSprite extends TextureAtlasSprite {
             this.tickCounter = 0;
 
             ResourceLocation bucketLoc = new ResourceLocation(FluidTranslator.MODID + ":textures/items/generic_bucket.png");
-            ResourceLocation fluidTexture = new ResourceLocation(getTextureForFluid(this.fluid));
+            ResourceLocation fluidTexture = fluid.getTexture();
 
             BufferedImage bucketBuf = ImageIO.read(Minecraft.getMinecraft().getResourceManager().getResource(bucketLoc).getInputStream());
             BufferedImage fluidBuf = ImageIO.read(Minecraft.getMinecraft().getResourceManager().getResource(fluidTexture).getInputStream());

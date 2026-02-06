@@ -196,7 +196,7 @@ public class TileEntityUniversalTank extends TileEntityLoadedBase implements IIn
 
                 if(node != null && node.hasValidNet()) {
                     node.net.addProvider(this);
-                    node.net.addReceiver(this); // TODO fix buffer mode
+                    node.net.addReceiver(this);
                 }
             } else {
                 if(this.node != null) {

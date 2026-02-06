@@ -11,6 +11,9 @@ import net.minecraftforge.fluids.Fluid;
 
 public class ClientEventHandler {
 
+    private static final String fluidSpriteSuffix = "_fluid";
+    private static final String bucketSpriteSuffix = "_bucket";
+
     @SubscribeEvent
     public void onTextureStitch(TextureStitchEvent.Pre event) {
         switch (event.map.getTextureType()) {
@@ -42,7 +45,7 @@ public class ClientEventHandler {
         ModFluidRegistry.validFluids().forEach(f -> {
             if (!ModFluidRegistry.textureExists(f)) return;
 
-            String spriteName = FluidTranslator.MODID + ":" + f.getName().toLowerCase() + "_texture";
+            String spriteName = FluidTranslator.MODID + ":" + f.getName().toLowerCase() + fluidSpriteSuffix;
             FluidAtlasSprite sprite = new FluidAtlasSprite(spriteName, f);
             event.map.setTextureEntry(sprite.getIconName(), sprite);
         });
@@ -51,11 +54,12 @@ public class ClientEventHandler {
     private void registerItemSprites(TextureStitchEvent.Pre event) {
         ModFluidRegistry.validFluids().forEach(f -> {
             if (ModFluidRegistry.textureExists(f)) {
-                String spriteName = FluidTranslator.MODID + ":" + f.getName().toLowerCase() + "_bucket";
+                String spriteName = FluidTranslator.MODID + ":" + f.getName().toLowerCase() + bucketSpriteSuffix;
                 BucketAtlasSprite sprite = new BucketAtlasSprite(spriteName, f);
                 event.map.setTextureEntry(sprite.getIconName(), sprite);
             } else {
-                MissingnoBucketAtlasSprite sprite = new MissingnoBucketAtlasSprite(FluidTranslator.MODID + ":missingno_bucket");
+                MissingnoBucketAtlasSprite sprite = new MissingnoBucketAtlasSprite(
+                        FluidTranslator.MODID + ":missingno_bucket");
                 event.map.setTextureEntry(sprite.getIconName(), sprite);
             }
         });
@@ -64,7 +68,7 @@ public class ClientEventHandler {
 
     private void applyFluidBlockSprites(TextureStitchEvent.Post event) {
         ModFluidRegistry.validFluids().forEach(f -> {
-            String spriteName = FluidTranslator.MODID + ":" + f.getName().toLowerCase() + "_texture";
+            String spriteName = FluidTranslator.MODID + ":" + f.getName().toLowerCase() + fluidSpriteSuffix;
             TextureAtlasSprite sprite = event.map.getAtlasSprite(spriteName);
 
             Fluid forgeFluid = ModFluidRegistry.getForgeFluid(f);
@@ -81,7 +85,7 @@ public class ClientEventHandler {
         ModFluidRegistry.validFluids().forEach(f -> {
             String spriteName =
                     ModFluidRegistry.textureExists(f)
-                            ? FluidTranslator.MODID + ":" + f.getName().toLowerCase() + "_bucket"
+                            ? FluidTranslator.MODID + ":" + f.getName().toLowerCase() + bucketSpriteSuffix
                             : FluidTranslator.MODID + ":missingno_bucket";
 
             TextureAtlasSprite sprite = event.map.getAtlasSprite(spriteName);

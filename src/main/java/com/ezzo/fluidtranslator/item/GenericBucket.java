@@ -1,5 +1,6 @@
 package com.ezzo.fluidtranslator.item;
 
+import com.ezzo.fluidtranslator.ModFluidRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
@@ -9,9 +10,9 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemBucket;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
+import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidContainerRegistry;
 
 import java.util.HashMap;
 
@@ -25,7 +26,7 @@ public class GenericBucket extends ItemBucket {
 
     public GenericBucket(Fluid fluid, Block block) {
         super(block);
-        this.setUnlocalizedName(fluid.getName() + "bucket");
+        this.setUnlocalizedName(ModFluidRegistry.getHBMFluid(fluid).getUnlocalizedName() + "bucket");
         this.setContainerItem(Items.bucket);
         this.setCreativeTab(CreativeTabs.tabMisc);
         this.fluid = fluid;
@@ -47,7 +48,8 @@ public class GenericBucket extends ItemBucket {
 
     @Override
     public String getItemStackDisplayName(ItemStack stack) {
-        return fluid.getLocalizedName(FluidContainerRegistry.getFluidForFilledItem(stack)) + " Bucket";
+        return StatCollector.translateToLocal(
+                fluid.getUnlocalizedName()) + " Bucket";
     }
 
     @Override

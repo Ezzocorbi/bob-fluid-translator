@@ -1,6 +1,5 @@
 package com.ezzo.fluidtranslator.blocks;
 
-import com.ezzo.fluidtranslator.ModFluidRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.material.Material;
@@ -23,7 +22,8 @@ public class CustomFluidBlock extends BlockFluidClassic {
 
     @Override
     public String getLocalizedName() {
-        return StatCollector.translateToLocal(ModFluidRegistry.getHBMFluid(fluid).getUnlocalizedName());
+        return StatCollector.translateToLocal(
+                fluid.getUnlocalizedName());
     }
 
     @Override
