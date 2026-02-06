@@ -43,31 +43,8 @@ public class BucketAtlasSprite extends TextureAtlasSprite {
             bucketBuf.getRGB(0, 0, bucketBuf.getWidth(), bucketBuf.getHeight(), rawBucket, 0, bucketBuf.getWidth());
             fluidBuf.getRGB(0, 0, fluidBuf.getWidth(), fluidBuf.getHeight(), rawFluid, 0, fluidBuf.getWidth());
 
-            int fluidTint = fluid.getColor();
-
-            // Take specific pixels in the bucket's texture and tint them to resemble the fluid
-            for (int i = 53; i < 58 + 1; i++) {
-                rawBucket[i] = multiplyRGB(rawBucket[i], fluidTint);
-            }
-
-            for (int i = 67; i < 76 + 1; i++) {
-                rawBucket[i] = multiplyRGB(rawBucket[i], fluidTint);
-            }
-
-            for (int i = 84; i < 91 + 1; i++) {
-                rawBucket[i] = multiplyRGB(rawBucket[i], fluidTint);
-            }
-
-            for (int i = 102; i < 105 + 1; i++) {
-                rawBucket[i] = multiplyRGB(rawBucket[i], fluidTint);
-            }
-
-            rawBucket[122] = multiplyRGB(rawBucket[122], fluidTint);
-            rawBucket[123] = multiplyRGB(rawBucket[123], fluidTint);
-            rawBucket[134] = multiplyRGB(rawBucket[134], fluidTint);
-            rawBucket[138] = multiplyRGB(rawBucket[138], fluidTint);
-            rawBucket[154] = multiplyRGB(rawBucket[154], fluidTint);
-            rawBucket[186] = multiplyRGB(rawBucket[186], fluidTint);
+            applyColorToBucket(rawBucket, fluid.getColor());
+//            applyColorToBucket(rawBucket, fluid.getTint());
 
             int size = (int)(1 + Math.log10(bucketBuf.getWidth()) / Math.log10(2));
             int[][] mipmaps = new int[size][];
@@ -86,6 +63,38 @@ public class BucketAtlasSprite extends TextureAtlasSprite {
         }
     }
 
+    /**
+     * Apply the supplied {@code color} to the pixels that represent the fluid.
+     * The magic numbers represent the x,y coords of those pixels.
+     *  @param bucketImg
+     * @param color
+     */
+    private void applyColorToBucket(int[] bucketImg, int color) {
+
+        for (int i = 53; i < 58 + 1; i++) {
+            bucketImg[i] = multiplyRGB(bucketImg[i], color);
+        }
+
+        for (int i = 67; i < 76 + 1; i++) {
+            bucketImg[i] = multiplyRGB(bucketImg[i], color);
+        }
+
+        for (int i = 84; i < 91 + 1; i++) {
+            bucketImg[i] = multiplyRGB(bucketImg[i], color);
+        }
+
+        for (int i = 102; i < 105 + 1; i++) {
+            bucketImg[i] = multiplyRGB(bucketImg[i], color);
+        }
+
+        bucketImg[122] = multiplyRGB(bucketImg[122], color);
+        bucketImg[123] = multiplyRGB(bucketImg[123], color);
+        bucketImg[134] = multiplyRGB(bucketImg[134], color);
+        bucketImg[138] = multiplyRGB(bucketImg[138], color);
+        bucketImg[154] = multiplyRGB(bucketImg[154], color);
+        bucketImg[186] = multiplyRGB(bucketImg[186], color);
+    }
+
     private int multiplyRGB(int rgb, int tint) {
         int tr = (tint >> 16) & 0xFF;
         int tg = (tint >> 8) & 0xFF;
@@ -100,9 +109,5 @@ public class BucketAtlasSprite extends TextureAtlasSprite {
         g = g * tg / 255;
         b = b * tb / 255;
         return (a << 24) | (r << 16) | (g << 8) | b;
-    }
-
-    private String getTextureForFluid(FluidType fluid) {
-        return "hbm:textures/gui/fluids/" + fluid.getName().toLowerCase() + ".png";
     }
 }
