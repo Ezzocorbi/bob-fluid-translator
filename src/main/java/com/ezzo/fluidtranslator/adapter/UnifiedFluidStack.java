@@ -55,7 +55,14 @@ public class UnifiedFluidStack {
     }
 
     public static UnifiedFluidStack fromForge(net.minecraftforge.fluids.FluidStack forgeFluidStack) {
-        return new UnifiedFluidStack(UnifiedFluid.fromForge(forgeFluidStack.getFluid()), forgeFluidStack.amount);
+        if (forgeFluidStack == null) {
+            return emptyStack();
+        }
+
+        return new UnifiedFluidStack(UnifiedFluid.fromForge(
+                forgeFluidStack.getFluid()),
+                forgeFluidStack.amount
+        );
     }
 
     public static UnifiedFluidStack fromHBM(FluidStack hbmFluidStack, int amount) {
@@ -71,10 +78,16 @@ public class UnifiedFluidStack {
     }
 
     public net.minecraftforge.fluids.FluidStack toForge() {
-        if(isEmpty()) {
+        Fluid forgeFluid = ModFluidRegistry.getForgeFluid(hbmFluidStack.type);
+
+        if(forgeFluid == null) {
             return null;
         }
-        return new net.minecraftforge.fluids.FluidStack(ModFluidRegistry.getForgeFluid(hbmFluidStack.type), hbmFluidStack.fill);
+
+        return new net.minecraftforge.fluids.FluidStack(
+                ModFluidRegistry.getForgeFluid(hbmFluidStack.type),
+                hbmFluidStack.fill
+        );
     }
 
     public UnifiedFluid getFluid() {

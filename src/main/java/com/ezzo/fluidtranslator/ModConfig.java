@@ -6,7 +6,6 @@ import com.google.common.collect.HashBiMap;
 import com.hbm.inventory.fluid.Fluids;
 import net.minecraftforge.common.config.Configuration;
 
-
 import java.util.*;
 
 public class ModConfig {
