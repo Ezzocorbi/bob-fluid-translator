@@ -151,6 +151,13 @@ public class GuiHBMAdapter extends GuiInfoContainer {
         int capacity = tank.getTankInfo(ForgeDirection.UP)[0].capacity;
         int fill = (fluid.amount * height) / capacity;
 
+        GL11.glEnable(GL11.GL_BLEND);
+        int color = fluidType.getTint();
+        double r = ((color >> 16) & 0xFF) / 255D;
+        double g = ((color >> 8) & 0xFF) / 255D;
+        double b = (color & 0xFF) / 255D;
+        GL11.glColor3d(r, g, b);
+
         double minX = x;
         double maxX = x + width;
         double minY = y - fill; // y = minY corresponds to top, y = maxY corresponds to bottom
@@ -168,6 +175,9 @@ public class GuiHBMAdapter extends GuiInfoContainer {
         tessellator.addVertexWithUV(maxX, minY, this.zLevel, maxU, minV);
         tessellator.addVertexWithUV(minX, minY, this.zLevel, minU, minV);
         tessellator.draw();
+
+        GL11.glColor3d(1D, 1D, 1D);
+        GL11.glDisable(GL11.GL_BLEND);
     }
 
 

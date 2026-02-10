@@ -44,7 +44,6 @@ public class BucketAtlasSprite extends TextureAtlasSprite {
             fluidBuf.getRGB(0, 0, fluidBuf.getWidth(), fluidBuf.getHeight(), rawFluid, 0, fluidBuf.getWidth());
 
             applyColorToBucket(rawBucket, fluid.getColor());
-//            applyColorToBucket(rawBucket, fluid.getTint());
 
             int size = (int)(1 + Math.log10(bucketBuf.getWidth()) / Math.log10(2));
             int[][] mipmaps = new int[size][];
