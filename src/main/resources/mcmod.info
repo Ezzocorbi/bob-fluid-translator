@@ -1,14 +1,14 @@
 [
 {
-  "modid": "examplemod",
-  "name": "Example Mod",
-  "description": "Example placeholder mod.",
+  "modid": "bobfluidtranslator",
+  "name": "Bob Fluid Translator",
+  "description": "This mod is a bridge between NTM's fluid system and Forge's fluid system: it aims to make these two compatible.",
   "version": "${version}",
   "mcversion": "${mcversion}",
-  "url": "",
+  "url": "https://github.com/Ezzocorbi/bob-fluid-translator",
   "updateUrl": "",
-  "authorList": ["ExampleDude"],
-  "credits": "The Forge and FML guys, for making this example",
+  "authorList": ["Ezzocorbi"],
+  "credits": "",
   "logoFile": "",
   "screenshots": [],
   "dependencies": []
