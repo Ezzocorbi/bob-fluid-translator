@@ -9,6 +9,7 @@ import com.hbm.inventory.fluid.tank.FluidTank;
 import com.hbm.util.fauxpointtwelve.BlockPos;
 import net.minecraft.block.Block;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 import java.util.Arrays;
@@ -123,7 +124,7 @@ public class FluidHandler {
             BlockDummyable dummy = (BlockDummyable) neighborBlock;
 
             // Get the coordinates of the multiblock's core
-            int[] corePos = dummy.findCore(world, tile.getX(), tile.getY(), tile.getZ());
+            int[] corePos = dummy.findCore((IBlockAccess) world, tile.getX(), tile.getY(), tile.getZ());
             if (corePos == null) return null;
             TileEntity coreTile = world.getTileEntity(corePos[0], corePos[1], corePos[2]);
 

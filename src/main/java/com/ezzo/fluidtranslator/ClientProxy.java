@@ -17,7 +17,7 @@ public class ClientProxy extends CommonProxy {
     public void registerTanslations() {
         ModFluidRegistry.validFluids().forEach(f -> {
             LanguageRegistry.instance().addStringLocalization(
-                    "fluid." + f.getName().toLowerCase(),
+                    "fluid." + f.getName().toLowerCase() + ModConfig.suffix,
                     "en_US",
                     f.getLocalizedName());
         });
