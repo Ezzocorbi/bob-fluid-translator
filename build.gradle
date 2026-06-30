@@ -30,10 +30,25 @@ minecraft {
     runDir = "eclipse"
 }
 
+compileJava.options.encoding = 'UTF-8'
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
+
+tasks.withType(Javadoc) {
+    options.encoding = 'UTF-8'
+    options.charSet = 'UTF-8'
+    options.docEncoding = 'UTF-8'
+    options.jFlags('-Dfile.encoding=UTF-8')
+}
+
 repositories {
     maven {
         name = "OpenComputers"
         url = "https://maven.cil.li/"
+    }
+    maven {
+        // RetroFuturaGradle
+        name = "GTNH Maven"
+        url = uri("https://nexus.gtnewhorizons.com/repository/public/")
     }
     maven {
         name = "Jitpack"
@@ -48,41 +63,28 @@ repositories {
         url = "https://maven.cil.li/"
     }
     maven {
+        name "NTM Releases"
+        url "https://maven.ntmr.dev/releases"
+    }
+    maven {
         name = "ChickenBones"
         url = "https://chickenbones.net/maven/"
     }
 }
 
 dependencies {
-    // you may put jars on which you depend on in ./libs
-    // or you may define them like so..
-    //compile "some.group:artifact:version:classifier"
-    //compile "some.group:artifact:version"
-    compile files("libs/HBM-NTM-[1.0.27_X5663].jar")
-    compileOnly files("libs/HBM-NTM-[1.0.27_X5663]-sources.jar")
+    implementation("com.hbm:HBM-NTM:1.0.27_X5719:dev") { transitive = false }
 
     implementation "li.cil.oc:OpenComputers:MC1.7.10-1.5.+:api"
 
-    implementation 'codechicken:CodeChickenCore:1.7.10-1.0.4.29:dev'
-    compileOnly 'codechicken:CodeChickenCore:1.7.10-1.0.4.29:src'
-
-    implementation 'codechicken:CodeChickenLib:1.7.10-1.1.3.140:dev'
-    compileOnly 'codechicken:CodeChickenLib:1.7.10-1.1.3.140:src'
-
-    implementation 'codechicken:NotEnoughItems:1.7.10-1.0.3.74:dev'
-    compileOnly 'codechicken:NotEnoughItems:1.7.10-1.0.3.74:src'
-    // real examples
-    //compile 'com.mod-buildcraft:buildcraft:6.0.8:dev'  // adds buildcraft to the dev env
-    //compile 'com.googlecode.efficient-java-matrix-library:ejml:0.24' // adds ejml to the dev env
-
-    // for more info...
-    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
-    // http://www.gradle.org/docs/current/userguide/dependency_management.html
+    implementation('com.github.GTNewHorizons:CodeChickenCore:1.4.16:dev')
+    implementation('com.github.GTNewHorizons:NotEnoughItems:2.8.105-GTNH:dev') { transitive = false }
 
 }
 
 processResources
 {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     // this will ensure that this task is redone when the versions change.
     inputs.property "version", project.version
     inputs.property "mcversion", project.minecraft.version
@@ -90,11 +92,11 @@ processResources
     // replace stuff in mcmod.info, nothing else
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
-                
+
         // replace version and mcversion
         expand 'version':project.version, 'mcversion':project.minecraft.version
     }
-        
+
     // copy everything else, thats not the mcmod.info
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
@@ -103,21 +105,24 @@ processResources
 
 def modsDir = project.findProperty("modsDir") ?: ""
 
-task copyModJar(type: Copy) {
-    from("$buildDir/libs") {
-        include "${archivesBaseName}-${version}.jar"
+if (!modsDir.isEmpty()) {
+    tasks.register('copyModJar', Copy) {
+        from("$buildDir/libs") {
+            include "${archivesBaseName}-${version}.jar"
+        }
+        into modsDir
     }
-    into modsDir
+    build.finalizedBy copyModJar
 }
 
-build.finalizedBy copyModJar
-
-task sourcesJar(type: Jar, dependsOn: classes) {
+tasks.register('sourcesJar', Jar) {
+    dependsOn classes
     classifier = 'sources'
     from sourceSets.main.allSource
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
+tasks.register('javadocJar', Jar) {
+    dependsOn javadoc
     classifier = 'javadoc'
     from javadoc.destinationDir
 }
@@ -125,9 +130,4 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 artifacts {
     archives sourcesJar
     archives javadocJar
-}
-
-tasks.withType(JavaCompile) {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
 }
