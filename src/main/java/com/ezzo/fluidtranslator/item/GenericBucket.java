@@ -1,6 +1,7 @@
 package com.ezzo.fluidtranslator.item;
 
 import com.ezzo.fluidtranslator.ModFluidRegistry;
+import com.hbm.inventory.fluid.Fluids;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
@@ -15,6 +16,9 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 
 import java.util.HashMap;
+import java.util.List;
+
+import static com.ezzo.fluidtranslator.ModFluidRegistry.getHBMFluid;
 
 public class GenericBucket extends ItemBucket {
 
@@ -26,7 +30,7 @@ public class GenericBucket extends ItemBucket {
 
     public GenericBucket(Fluid fluid, Block block) {
         super(block);
-        this.setUnlocalizedName(ModFluidRegistry.getHBMFluid(fluid).getUnlocalizedName() + "bucket");
+        this.setUnlocalizedName(getHBMFluid(fluid).getUnlocalizedName() + "bucket");
         this.setContainerItem(Items.bucket);
         this.setCreativeTab(CreativeTabs.tabMisc);
         this.fluid = fluid;
@@ -41,10 +45,6 @@ public class GenericBucket extends ItemBucket {
         return fluidToBucket.get(fluid);
     }
 
-    @Override
-    public boolean tryPlaceContainedLiquid(World world, int x, int y, int z) {
-        return false;
-    }
 
     @Override
     public String getItemStackDisplayName(ItemStack stack) {
@@ -69,5 +69,10 @@ public class GenericBucket extends ItemBucket {
 
     public void setIcon(IIcon icon) {
         this.icon = icon;
+    }
+
+    @Override
+    public void addInformation(ItemStack stack, EntityPlayer player, List list, boolean bool){
+        getHBMFluid(fluid).addInfo(list);
     }
 }

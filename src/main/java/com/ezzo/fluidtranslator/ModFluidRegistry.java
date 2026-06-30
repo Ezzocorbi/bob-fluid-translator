@@ -1,13 +1,24 @@
 package com.ezzo.fluidtranslator;
 
-import com.ezzo.fluidtranslator.blocks.CustomFluidBlock;
+import com.ezzo.fluidtranslator.blocks.fluid.CorrosiveFluidBlock;
+import com.ezzo.fluidtranslator.blocks.fluid.CustomFluidBlock;
+import com.ezzo.fluidtranslator.blocks.fluid.FlammableFluidBlock;
+import com.ezzo.fluidtranslator.blocks.fluid.GasFluidBlock;
 import com.ezzo.fluidtranslator.item.CustomFluidItemBlock;
 import com.ezzo.fluidtranslator.item.GenericBucket;
+
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.fluid.trait.FT_Combustible;
+import com.hbm.inventory.fluid.trait.FT_Corrosive;
+import com.hbm.inventory.fluid.trait.FT_Flammable;
+import com.hbm.inventory.fluid.trait.FluidTraitSimple;
+
 import cpw.mods.fml.common.registry.GameRegistry;
+import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.Fluid;
@@ -24,8 +35,8 @@ import java.util.List;
  * This class manages the registration and translation of fluids from the HBM mod
  * into the Forge fluid system.
  * <p>
- * Given an instance of {@link com.hbm.inventory.fluid.FluidType} (an HBM-defined fluid),
- * the class handles the registration of the corresponding {@link net.minecraftforge.fluids.Fluid}
+ * Given an instance of {@link FluidType} (an HBM-defined fluid),
+ * the class handles the registration of the corresponding {@link Fluid}
  * through the Forge API, automatically creating the associated block and bucket.
  * </p>
  *
@@ -46,21 +57,40 @@ public class ModFluidRegistry {
 
     /**
      * Given a {@link FluidType} from HBM, this method registers a corresponding Forge Fluid ({@link Fluid})
+     *
      * @param fluidType HBM fluid
-     * @return Returns the fluid block associated to the ForgeFluid
      */
-    public CustomFluidBlock registerFluidType(FluidType fluidType) {
+    public void registerFluidType(FluidType fluidType) {
         String name = ModConfig.customMappings.getOrDefault(
                 fluidType.getName(),
                 fluidType.getName().toLowerCase() + ModConfig.suffix);
 
-        Fluid forgeFluid = new Fluid(name);
+        Fluid forgeFluid = new Fluid(name)
+                .setTemperature(fluidType.temperature)
+                .setGaseous(fluidType.hasTrait(FluidTraitSimple.FT_Gaseous.class));
         FluidRegistry.registerFluid(forgeFluid);
 
-        CustomFluidBlock block = new CustomFluidBlock(forgeFluid, Material.water, name);
-        GameRegistry.registerBlock(block, CustomFluidItemBlock.class, name + "_block");
-        forgeFluid.setBlock(block);
+        Block block = Blocks.air;
+        if(!isBlockBlackListed(fluidType))
+        {
+            if(fluidType.hasTrait(FT_Corrosive.class)){
+                block = new CorrosiveFluidBlock(forgeFluid, Material.water, name);
+            }
+            else if (fluidType.hasTrait(FluidTraitSimple.FT_Gaseous.class) ||
+                     fluidType.hasTrait(FluidTraitSimple.FT_Gaseous_ART.class)){
+                block = new GasFluidBlock(forgeFluid, Material.water, name);
+            }
+            else if(fluidType.hasTrait(FT_Combustible.class) ||
+                    fluidType.hasTrait(FT_Flammable.class)){
+                block = new FlammableFluidBlock(forgeFluid, Material.water, name);
+            }
+            else {
+                block = new CustomFluidBlock(forgeFluid, Material.water, name);
+            }
 
+            GameRegistry.registerBlock(block, CustomFluidItemBlock.class, name + "_block");
+            forgeFluid.setBlock(block);
+        }
         GenericBucket genericBucket = new GenericBucket(forgeFluid, block);
         GameRegistry.registerItem(genericBucket, name + "_bucket");
 
@@ -70,7 +100,6 @@ public class ModFluidRegistry {
                 new ItemStack(Items.bucket)
         );
 
-        return block;
     }
 
     /**
@@ -108,7 +137,14 @@ public class ModFluidRegistry {
     public static boolean isBlackListed(FluidType fluidType) {
         return ModConfig.fluidBlacklist.contains(fluidType.getName());
     }
-
+    /**
+     *
+     * @param fluidType Fluid to check
+     * @return Returns true if the fluid block should not be registered
+     */
+    public static boolean isBlockBlackListed(FluidType fluidType) {
+        return ModConfig.blockBlacklist.contains(fluidType.getName());
+    }
     /**
      * Returns all registered {@link FluidType}s that are not blacklisted.
      *

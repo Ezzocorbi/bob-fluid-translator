@@ -1,6 +1,6 @@
 package com.ezzo.fluidtranslator;
 
-import com.ezzo.fluidtranslator.blocks.CustomFluidBlock;
+import com.ezzo.fluidtranslator.blocks.fluid.CustomFluidBlock;
 import com.ezzo.fluidtranslator.item.GenericBucket;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.block.Block;

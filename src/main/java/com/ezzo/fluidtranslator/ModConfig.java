@@ -16,7 +16,7 @@ public class ModConfig {
      * not register a Forge fluid.
      */
     public static Set<String> fluidBlacklist;
-
+    public static Set<String> blockBlacklist;
     public static BiMap<String, String> customMappings;
 
     public static String suffix;
@@ -36,6 +36,14 @@ public class ModConfig {
                 "Fluids in the blacklist do not receive an automatic mapping.\n" +
                         "For more info visit https://github.com/Ezzocorbi/bob-fluid-translator/wiki/Configs\n");
         ModConfig.fluidBlacklist = new HashSet<String>(Arrays.asList(blacklist));
+
+        String[] blockblacklist = config.getStringList("blockBlacklist",
+                "conversion",
+                new String[] {
+                        "SMOKE","SMOKE_LEADED","SMOKE_POISON","AMAT","ASCHRAB"
+                },
+                "Fluids in the blacklist will not have corresponding blocks registered for them.\n");
+        ModConfig.blockBlacklist = new HashSet<String>(Arrays.asList(blockblacklist));
 
         String[] stringMappings = config.getStringList(
                 "mappings",
