@@ -1,6 +1,6 @@
 package com.ezzo.fluidtranslator.item;
 
-import com.ezzo.fluidtranslator.blocks.CustomFluidBlock;
+import com.ezzo.fluidtranslator.blocks.fluid.CustomFluidBlock;
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
