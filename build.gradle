@@ -81,6 +81,15 @@ dependencies {
 
 }
 
+jar {
+    manifest {
+        attributes 'FMLCorePlugin': 'com.ezzo.fluidtranslator.asm.FluidTranslatorLoadingPlugin'
+        // Tells FML this jar is BOTH a coremod AND a regular @Mod jar, so the
+        // normal FluidTranslator mod content still gets loaded too.
+        attributes 'FMLCorePluginContainsFMLMod': 'true'
+    }
+}
+
 processResources
 {
     // this will ensure that this task is redone when the versions change.
@@ -104,10 +113,16 @@ processResources
 def modsDir = project.findProperty("modsDir") ?: ""
 
 task copyModJar(type: Copy) {
+    // "into" is evaluated at configuration time, so it must never see an
+    // empty string - onlyIf alone can't prevent that. Fall back to a
+    // harmless placeholder path inside the build dir when no -PmodsDir=...
+    // was given, and skip the actual copy at execution time.
+    def target = modsDir.toString().trim()
+    onlyIf { !target.isEmpty() }
     from("$buildDir/libs") {
         include "${archivesBaseName}-${version}.jar"
     }
-    into modsDir
+    into target.isEmpty() ? "$buildDir/tmp/unusedCopyModJar" : target
 }
 
 build.finalizedBy copyModJar

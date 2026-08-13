@@ -22,6 +22,16 @@ public class ModConfig {
     public static String suffix;
 
     /**
+     * Auto converting liquid to forge's or to hbm's fluid systems
+     */
+    public static boolean enableUniversalFluidPorts;
+
+    /**
+     * Trying to push liquid into forge every sec
+     */
+    public static boolean enableAutoPushToForge;
+
+    /**
      * Loads configs from file and sets their values in game.
      * Finally, saves the configs if they have changed.
      */
@@ -57,6 +67,26 @@ public class ModConfig {
                         "Set to empty string for better compatibility with other mods.\n" +
                         "Default value \"_fluid\" is kept for backward compatibility with\n" +
                         "older versions of this mod, to avoid breaking existing worlds."
+        );
+
+        ModConfig.enableUniversalFluidPorts = config.getBoolean(
+                "enableUniversalFluidPorts",
+                "universalPorts",
+                true,
+                "If true, every NTM fluid receiver/sender/transceiver also directly implements\n" +
+                        "Forge's IFluidHandler, so fluid can be moved straight between NTM machines/tanks\n" +
+                        "and any Forge-based system (pipes, AE2 fluid interfaces, hoppers, etc.) with no\n" +
+                        "Adapter block in between. Set to false to fall back to requiring the Adapter block.\n"
+        );
+
+        ModConfig.enableAutoPushToForge = config.getBoolean(
+                "enableAutoPushToForge",
+                "universalPorts",
+                true,
+                "EXPERIMENTAL. If true, NTM fluid senders also actively try to push fluid into a\n" +
+                        "neighboring plain-Forge fluid handler every tick, instead of only reacting when\n" +
+                        "something else calls them. Disable this if fluid seems to leak somewhere unexpected;\n" +
+                        "everything initiated from the Forge side keeps working regardless of this setting.\n"
         );
 
         if (config.hasChanged()) config.save();
